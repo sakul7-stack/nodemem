@@ -1,0 +1,24 @@
+# --- critical: never commit secrets ---
+.env
+.env.*
+*.key
+*.pem
+
+# api keys sometimes leak into local settings
+.claude/settings.local.json
+
+# --- runtime / generated, not source ---
+__pycache__/
+*.pyc
+*.log
+*.output
+notes_*.json
+
+# --- LaTeX build artifacts ---
+*.aux
+*.bbl
+*.blg
+*.out
+*.toc
+*.synctex.gz
+# note: main.pdf is intentionally NOT ignored so collaborators can read the build

@@ -1,0 +1,241 @@
+{
+  "config": {
+    "offline": true,
+    "scale": "tiny",
+    "n_cases": 6,
+    "synth_model": "claude-opus-4-8",
+    "extract_model_called": "claude-opus-4-8",
+    "extract_price_tier": "claude-haiku-4-5",
+    "recent_k": 6,
+    "truncate_k": 10,
+    "segment_size": 6,
+    "token_counter": "tiktoken/cl100k (cumulative); Anthropic usage (per-query real)",
+    "seed": 7,
+    "elapsed_s": 0.3
+  },
+  "strategies": {
+    "full_context": {
+      "token_reduction_real_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 6
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 6
+      },
+      "cost_pct_of_baseline": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 6
+      },
+      "retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 6
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 6
+      }
+    },
+    "truncation": {
+      "token_reduction_real_pct": {
+        "mean": 45.16,
+        "std": 19.9,
+        "ci95": [
+          28.94,
+          60.99
+        ],
+        "n": 6
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 33.35,
+        "std": 23.15,
+        "ci95": [
+          14.51,
+          52.1
+        ],
+        "n": 6
+      },
+      "cost_pct_of_baseline": {
+        "mean": 66.65,
+        "std": 23.15,
+        "ci95": [
+          47.9,
+          85.49
+        ],
+        "n": 6
+      },
+      "retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 6
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 6
+      }
+    },
+    "running_summary": {
+      "token_reduction_real_pct": {
+        "mean": 37.14,
+        "std": 22.66,
+        "ci95": [
+          18.74,
+          54.82
+        ],
+        "n": 6
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 36.66,
+        "std": 24.18,
+        "ci95": [
+          17.1,
+          55.99
+        ],
+        "n": 6
+      },
+      "cost_pct_of_baseline": {
+        "mean": 86.59,
+        "std": 38.97,
+        "ci95": [
+          55.68,
+          117.82
+        ],
+        "n": 6
+      },
+      "retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 6
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 6
+      }
+    },
+    "hierarchical": {
+      "token_reduction_real_pct": {
+        "mean": -26.52,
+        "std": 21.53,
+        "ci95": [
+          -41.63,
+          -8.48
+        ],
+        "n": 6
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 7.41,
+        "std": 18.0,
+        "ci95": [
+          -6.84,
+          21.63
+        ],
+        "n": 6
+      },
+      "cost_pct_of_baseline": {
+        "mean": 106.16,
+        "std": 25.25,
+        "ci95": [
+          87.08,
+          126.45
+        ],
+        "n": 6
+      },
+      "retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 6
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 6
+      }
+    }
+  },
+  "cost_breakdown_usd": {
+    "extractor_total_cascade_price": 0.012989,
+    "extractor_total_actual_price": 0.064945,
+    "summary_maintenance_total": 0.01997
+  },
+  "latency_s": {
+    "full_response": {
+      "mean": 0.0,
+      "std": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "n": 6
+    },
+    "hier_response": {
+      "mean": 0.0,
+      "std": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "n": 6
+    },
+    "extractor_call": {
+      "mean": 0.0,
+      "std": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "n": 36
+    },
+    "overhead_mean": 0.0
+  }
+}
