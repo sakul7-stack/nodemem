@@ -29,18 +29,22 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 from datasets import Case, build_suite
 from hierarchical_memory import (
     EXTRACT_SYSTEM,
+    SLOT_EXTRACT_SYSTEM,
     FullContext,
     Hierarchical,
     Note,
     NotesFile,
+    SlotMemory,
+    SlotMemoryStore,
     Truncation,
     _heuristic_extract,
+    parse_slot_facts,
 )
 from token_utils import assemble_text, count_tokens_local, fraction_of_baseline_pct, price_for
 
 
 ROOT = Path(__file__).resolve().parent
-DEFAULT_RESULTS = ROOT / "results_live_aggregate.json"
+DEFAULT_RESULTS = ROOT / "results_live_slot_aggregate.json"
 DEFAULT_FIG_DIR = ROOT / "figures"
 DEFAULT_GROWTH_OUT = ROOT / "results_growth_simulation.json"
 
@@ -55,7 +59,7 @@ STRATEGIES = [
     ("full_context", "Full context"),
     ("truncation", "Truncation"),
     ("running_summary", "Running summary"),
-    ("hierarchical", "Hierarchical"),
+    ("hierarchical", "Append-only notes"),
     ("slot_memory", "Fact slots"),
 ]
 
@@ -187,7 +191,7 @@ def plot_architecture(out_dir: Path) -> None:
     boxes = {
         "segment": draw_box(ax, (0.2, 2.25), "Conversation\nsegment", color="#e8f1fb"),
         "extractor": draw_box(ax, (3.0, 2.25), "Cheap extractor\n$\\phi_{small}$", color="#e8f7ee"),
-        "notes": draw_box(ax, (5.8, 2.25), "Persistent memory\n(notes or slots)", color="#fff4df"),
+        "notes": draw_box(ax, (5.8, 2.25), "Fact-slot table\n(latest value per key)", color="#fff4df"),
         "recent": draw_box(ax, (3.0, 0.9), "Recent window\n(last $k$ messages)", color="#f4e8fb"),
         "synth": draw_box(ax, (5.8, 0.9), "Large synthesizer\n$\\phi_{large}$", color="#fdebea"),
         "answer": draw_box(ax, (8.3, 0.9), "Answer", width=1.4, color="#eeeeee"),
@@ -197,8 +201,8 @@ def plot_architecture(out_dir: Path) -> None:
     draw_arrow(ax, (6.9, 2.25), (6.9, 1.62))
     draw_arrow(ax, (5.2, 1.26), (5.8, 1.26))
     draw_arrow(ax, (8.0, 1.26), (8.3, 1.26))
-    ax.text(0.3, 3.35, "Write path: extract once per segment", fontsize=9, weight="bold")
-    ax.text(3.0, 0.35, "Read path: notes + recent messages replace full-history prompts", fontsize=9, weight="bold")
+    ax.text(0.3, 3.35, "Write path: extract slots once per segment, overwrite by key", fontsize=9, weight="bold")
+    ax.text(3.0, 0.35, "Read path: latest-value slots + recent messages replace full-history prompts", fontsize=9, weight="bold")
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 3.8)
     save_figure(fig, out_dir, "architecture_flowchart")
@@ -230,17 +234,34 @@ def build_segment_notes(case: Case) -> tuple[list[Note], int, int]:
     return notes, extract_in, extract_out
 
 
+def build_segment_slots(case: Case) -> tuple[list[list], int, int]:
+    """Deterministic per-segment slot facts and extractor token accounting."""
+    per_segment = []
+    extract_in = 0
+    extract_out = 0
+    for seg_id, seg in segment_messages(case.messages, SEGMENT_SIZE):
+        convo = "\n".join(f'{m["role"]}: {m["content"]}' for m in seg)
+        facts = parse_slot_facts(convo, seg_id, seg_id)
+        per_segment.append(facts)
+        extract_in += count_tokens_local(assemble_text(SLOT_EXTRACT_SYSTEM, [{"role": "user", "content": convo}]))
+        extract_out += count_tokens_local(json.dumps([f.value for f in facts], sort_keys=True))
+    return per_segment, extract_in, extract_out
+
+
 def simulate_case_costs(case: Case) -> dict:
     segment_notes, extract_in, extract_out = build_segment_notes(case)
+    slot_segments, slot_extract_in, slot_extract_out = build_segment_slots(case)
     n_segments = (len(case.messages) + SEGMENT_SIZE - 1) // SEGMENT_SIZE
     totals = {
         "full_context": 0,
         "truncation": 0,
         "hierarchical_append_only": 0,
         "hierarchical_compacted": 0,
+        "slot_memory": 0,
     }
     raw_notes = NotesFile()
     compact_notes = NotesFile()
+    slot_store = SlotMemoryStore()
     seg_index = 0
     history = []
     full = FullContext()
@@ -257,6 +278,8 @@ def simulate_case_costs(case: Case) -> dict:
             totals["hierarchical_append_only"] += count_tokens_local(assemble_text(system, msgs))
             system, msgs = Hierarchical(RECENT_K, compact_notes).build_context(history, query)
             totals["hierarchical_compacted"] += count_tokens_local(assemble_text(system, msgs))
+            system, msgs = SlotMemory(RECENT_K, slot_store).build_context(history, query)
+            totals["slot_memory"] += count_tokens_local(assemble_text(system, msgs))
 
         history.append(message)
         while seg_index < n_segments and (turn_i + 1) >= (seg_index + 1) * SEGMENT_SIZE:
@@ -264,17 +287,22 @@ def simulate_case_costs(case: Case) -> dict:
                 raw_notes.notes.append(segment_notes[seg_index])
                 compact_notes.notes.append(segment_notes[seg_index])
                 compact_notes.compact(max_notes=COMPACT_MAX_NOTES)
+            if seg_index < len(slot_segments):
+                for fact in slot_segments[seg_index]:
+                    slot_store.upsert(fact)
             seg_index += 1
 
     synth_in_price, _ = price_for(SYNTH_MODEL)
     extract_in_price, extract_out_price = price_for(EXTRACT_MODEL)
     extract_cost = (extract_in * extract_in_price + extract_out * extract_out_price) / 1000.0
+    slot_extract_cost = (slot_extract_in * extract_in_price + slot_extract_out * extract_out_price) / 1000.0
     full_cost = totals["full_context"] * synth_in_price / 1000.0
     costs = {
         "full_context": full_cost,
         "truncation": totals["truncation"] * synth_in_price / 1000.0,
         "hierarchical_append_only": totals["hierarchical_append_only"] * synth_in_price / 1000.0 + extract_cost,
         "hierarchical_compacted": totals["hierarchical_compacted"] * synth_in_price / 1000.0 + extract_cost,
+        "slot_memory": totals["slot_memory"] * synth_in_price / 1000.0 + slot_extract_cost,
     }
     return {
         "messages": len(case.messages),
@@ -295,7 +323,7 @@ def run_growth_simulation(out_path: Path) -> dict:
     for case in cases:
         grouped[len(case.messages)].append(simulate_case_costs(case))
 
-    strategy_keys = ["full_context", "truncation", "hierarchical_append_only", "hierarchical_compacted"]
+    strategy_keys = ["full_context", "truncation", "hierarchical_append_only", "hierarchical_compacted", "slot_memory"]
     points = []
     for n_messages in sorted(grouped):
         rows = grouped[n_messages]
@@ -335,6 +363,7 @@ def plot_growth_simulation(simulation: dict, out_dir: Path) -> None:
         ("truncation", "Truncation", "#f58518", "--"),
         ("hierarchical_append_only", "Hierarchical notes", "#b279a2", "-"),
         ("hierarchical_compacted", "Hierarchical + compaction", "#54a24b", "-"),
+        ("slot_memory", "Fact slots", "#e45756", "-"),
     ]
     fig, ax = plt.subplots(figsize=(7.0, 4.3))
     for key, label, color, linestyle in series:
@@ -347,6 +376,7 @@ def plot_growth_simulation(simulation: dict, out_dir: Path) -> None:
     ax.set_xscale("log")
     ax.set_xticks(xs)
     ax.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+    ax.get_xaxis().set_minor_formatter(matplotlib.ticker.NullFormatter())
     ax.grid(alpha=0.25)
     ax.legend(frameon=False)
     save_figure(fig, out_dir, "cost_vs_length_simulation")
@@ -374,7 +404,6 @@ def main() -> None:
     if results is not None:
         plot_measured_bars(results, args.out_dir)
         plot_retention_cost_frontier(results, args.out_dir)
-        plot_ablation(results, args.out_dir)
 
     print(f"Wrote figures to {args.out_dir}")
     print(f"Wrote growth simulation to {args.growth_out}")
