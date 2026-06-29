@@ -37,6 +37,11 @@
         "input_tokens": 1105.0,
         "cost_pct_of_full": 121.677,
         "cost_usd": 0.001
+      },
+      "slot_memory": {
+        "input_tokens": 974.857,
+        "cost_pct_of_full": 106.182,
+        "cost_usd": 0.001
       }
     },
     {
@@ -60,6 +65,11 @@
       "hierarchical_compacted": {
         "input_tokens": 3459.286,
         "cost_pct_of_full": 91.062,
+        "cost_usd": 0.002
+      },
+      "slot_memory": {
+        "input_tokens": 2676.857,
+        "cost_pct_of_full": 70.321,
         "cost_usd": 0.002
       }
     },
@@ -85,6 +95,11 @@
         "input_tokens": 8588.667,
         "cost_pct_of_full": 71.949,
         "cost_usd": 0.005
+      },
+      "slot_memory": {
+        "input_tokens": 5609.667,
+        "cost_pct_of_full": 47.127,
+        "cost_usd": 0.003
       }
     },
     {
@@ -109,6 +124,11 @@
         "input_tokens": 18461.0,
         "cost_pct_of_full": 42.303,
         "cost_usd": 0.011
+      },
+      "slot_memory": {
+        "input_tokens": 11551.25,
+        "cost_pct_of_full": 26.594,
+        "cost_usd": 0.007
       }
     },
     {
@@ -133,6 +153,11 @@
         "input_tokens": 39722.25,
         "cost_pct_of_full": 24.033,
         "cost_usd": 0.024
+      },
+      "slot_memory": {
+        "input_tokens": 23087.25,
+        "cost_pct_of_full": 14.037,
+        "cost_usd": 0.014
       }
     },
     {
@@ -157,6 +182,11 @@
         "input_tokens": 83968.0,
         "cost_pct_of_full": 13.036,
         "cost_usd": 0.05
+      },
+      "slot_memory": {
+        "input_tokens": 47177.5,
+        "cost_pct_of_full": 7.367,
+        "cost_usd": 0.028
       }
     }
   ]
