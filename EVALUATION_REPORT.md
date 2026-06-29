@@ -1,8 +1,8 @@
 # Evaluation Report: Persistent Note-Based Memory for Token-Efficient LLM Agents
 
 **Author:** Ishan Gautam
-**Date:** 2026-06-28
-**Status:** Measured results replacing the projected Table 2 of the paper.
+**Date:** 2026-06-29
+**Status:** Measured Groq results plus deterministic long-horizon cost simulation.
 
 ---
 
@@ -28,6 +28,17 @@ same extraction task.
 The original projected gains do not hold at these lengths and have been removed
 from the paper. The honest, defensible claim is the trade-off above plus the
 cascade ablation.
+
+New artifacts added on 2026-06-29 include a long-horizon deterministic
+token-accounting simulation, a `--scale long` stress-test tier, bounded-note
+compaction, a reproducible figure-generation script, and publication-ready
+figures under `figures/`.
+
+I also checked whether this device could run a fresh live Groq rerun. No
+`GROQ_API_KEY` was present in the shell environment or `.env`, so a new live run
+cannot be executed on this device until a key is supplied. The helper script
+`scripts/run_groq_experiment.sh` will run the same Groq setup once the key is
+available.
 
 ---
 
@@ -121,6 +132,37 @@ cheap model.
 - Extractor spend over the whole run: **$0.00046**.
 - Summary-maintenance spend: **$0.00291**.
 
+### 3.4 Deterministic long-horizon cost simulation
+
+To address the paper's asymptotic claim without incurring a large live-API run,
+we added a deterministic token-accounting simulation in `make_figures.py`. It
+uses the same seeded conversation generator, prompt assembly code, `tiktoken` /
+`cl100k` local token counting, and Groq price model as the evaluation harness.
+Notes are produced by the deterministic offline extractor, so these results are
+**cost-shape evidence only**; they are not live retention measurements.
+
+The simulation combines the existing `paper` scale with a new `long` scale
+(120, 240, and 480 messages) and compares full context, truncation,
+append-only hierarchical notes, and hierarchical notes with deterministic
+compaction to at most 8 note entries.
+
+| Messages | Full context | Truncation | Hierarchical notes | Hierarchical + compaction |
+|---:|---:|---:|---:|---:|
+| 14 | 100.0% | 96.3% | 121.7% | 121.7% |
+| 32 | 100.0% | 61.4% | 91.1% | 91.1% |
+| 60 | 100.0% | 37.7% | 73.3% | 71.9% |
+| 120 | 100.0% | 20.8% | 51.9% | 42.3% |
+| 240 | 100.0% | 11.0% | 42.0% | 24.0% |
+| 480 | 100.0% | 5.7% | 36.3% | 13.0% |
+
+Interpretation: append-only notes already cross below full-context cost by the
+32-message bucket in the deterministic simulation, but note growth keeps them
+well above truncation. Compaction matters strongly at long horizons: at 480
+messages, bounded hierarchical memory is **13.0%** of full-context cost versus
+**36.3%** for append-only notes. This supports the future-work direction in the
+paper: large token wins require bounded notes or retrieval, not merely an
+append-only notes file.
+
 ---
 
 ## 4. Interpretation
@@ -154,9 +196,10 @@ cheap model.
 
 ## 5. Limitations / Threats to Validity
 
-- **Conversation length.** Results are at ≤56 messages. The token-reduction case
-  for note-based memory is asymptotic; longer conversations are needed to show
-  cumulative wins, and we do not claim them.
+- **Conversation length.** Live retention results are at ≤56 messages. The
+  deterministic long-horizon simulation shows the expected cost-growth curve,
+  but a live >100-message run is still needed to measure cost and retention
+  together.
 - **Single workload family.** Synthetic fact-tracking conversations, one seed
   reported. Topic and seed variation are future work.
 - **Tokenizer mismatch.** Cumulative token counts use `tiktoken` (OpenAI) on
@@ -167,21 +210,64 @@ cheap model.
 - **Containment-based QA.** Retention is scored by answer containment, which can
   under-credit correct paraphrases — this penalizes the expensive extractor more
   than the cheap one and should be read alongside the ablation caveat.
+- **Live rerun dependency.** Re-running the Groq experiment requires a valid
+  `GROQ_API_KEY`. The repository includes the exact command and helper script,
+  but this local session did not have credentials available.
 
 ---
 
-## 6. Reproduction
+## 6. Research Integrity and Citation Hygiene
+
+- The manuscript is written as original prose and avoids long copied passages or
+  copyrighted excerpts.
+- Claims about prior work are attributed through in-text citations and matching
+  bibliography entries in `main.tex`.
+- A local publication audit script checks unresolved placeholders, missing
+  bibliography entries, required artifacts, and accidental API-key leakage:
 
 ```bash
-pip install -r requirements.txt          # anthropic, openai, tiktoken
+.venv/bin/python scripts/publication_audit.py
+```
+
+This audit is a reproducibility and source-hygiene check. It does not guarantee
+acceptance by a venue and cannot guarantee any particular automated AI-detector
+classification.
+
+---
+
+## 7. Reproduction
+
+```bash
+python -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
 export GROQ_API_KEY=...                   # your own key
-python evaluate.py \
+.venv/bin/python evaluate.py \
     --provider groq \
     --scale small \
     --seed 7 \
     --out results_live.json
+
+# Long-horizon deterministic cost simulation + figures:
+.venv/bin/python make_figures.py
+
+# Offline long-scale plumbing test with bounded notes:
+.venv/bin/python evaluate.py --offline --scale long --compact-notes 8 --out results_long_offline.json
+
+# Same live Groq setup via helper script:
+scripts/run_groq_experiment.sh
 ```
 
 Raw measured output: `results_live.json`. The harness writes results
 incrementally per case, so a late rate-limit failure does not discard completed
 cases.
+
+Generated publication artifacts:
+
+- `figures/architecture_flowchart.{pdf,png}`
+- `figures/measured_results_bars.{pdf,png}`
+- `figures/retention_cost_frontier.{pdf,png}`
+- `figures/cascade_ablation.{pdf,png}`
+- `figures/cost_vs_length_simulation.{pdf,png}`
+- `examples/sample_notes_product_development.json`
+- `results_growth_simulation.json`
+- `results_long_offline.json`

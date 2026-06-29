@@ -7,6 +7,9 @@ with:
   * a subset of *fact updates* (a later turn overrides an earlier value), which
     is the adversarial case for append-only notes.
 
+The optional ``long`` scale extends the same deterministic generator to 120,
+240, and 480-message stress cases for token-growth experiments.
+
 Fully reproducible from a seed -- no API needed to build the data, so the
 suite is identical on every machine.
 """
@@ -179,12 +182,15 @@ def build_suite(seed: int = 7, scale: str = "small") -> list[Case]:
 
     scale='small' -> 8 cases (cheap, for a real-API run).
     scale='paper' -> 20 cases matching the paper's stated counts.
+    scale='long' -> 12 stress cases with >100 messages for token-growth curves.
     """
     rng = random.Random(seed)
     cases: list[Case] = []
 
     if scale == "paper":
         plan = [("short", 7, 14, 3, 1), ("medium", 7, 32, 4, 2), ("long", 6, 60, 5, 2)]
+    elif scale == "long":
+        plan = [("long120", 4, 120, 5, 2), ("long240", 4, 240, 5, 2), ("long480", 4, 480, 5, 2)]
     elif scale == "tiny":
         plan = [("short", 2, 14, 3, 1), ("medium", 2, 30, 4, 2), ("long", 2, 56, 5, 2)]
     else:  # small

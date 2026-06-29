@@ -17,7 +17,11 @@ reduction in expensive-model input tokens.
 | `hierarchical_memory.py` | `HierarchicalMemory`, the append-only `NotesFile`, the provider abstraction (Anthropic + an offline mock), and the four comparison strategies. |
 | `token_utils.py` | Token counting via the **real Anthropic tokenizer** (`count_tokens`) and a cost model that includes the extractor and notes-growth terms. |
 | `datasets.py` | Deterministic synthetic conversation suite with planted facts and adversarial **fact-update** probes. |
-| `evaluate.py` | Runs all baselines, measures token reduction / cost / retention / latency, runs the cheap-vs-expensive-extractor **ablation**, and writes `results.json`. |
+| `evaluate.py` | Runs all baselines, measures token reduction / cost / retention / latency, supports the cheap-vs-expensive-extractor **ablation**, long-horizon stress scale, and optional notes compaction. |
+| `make_figures.py` | Rebuilds publication figures and the deterministic long-horizon cost simulation. |
+| `FINDINGS.md` | Concise measured findings, long-horizon simulation interpretation, and live-rerun status. |
+| `scripts/` | Reproducibility helpers for live Groq reruns and publication-readiness checks. |
+| `figures/` | Generated PDF/PNG figures for the paper and report. |
 
 ## Baselines
 
@@ -29,22 +33,35 @@ reduction in expensive-model input tokens.
 ## Quick start
 
 ```bash
-pip install -r requirements.txt
+python -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
 
 # Deterministic offline smoke test (no API key, no cost):
-python evaluate.py --offline --scale small --out results_offline.json
+.venv/bin/python evaluate.py --offline --scale small --out results_offline.json
+
+# Long-horizon offline stress test with bounded notes:
+.venv/bin/python evaluate.py --offline --scale long --compact-notes 8 --out results_long_offline.json
+
+# Rebuild the paper figures and deterministic cost-vs-length simulation:
+.venv/bin/python make_figures.py
 
 # Real measured run used for the paper (Groq: llama-3.1-8b-instant extractor
 # + llama-3.3-70b-versatile synthesizer):
 export GROQ_API_KEY=gsk_...
-python evaluate.py --provider groq --scale small --ablation --out results_live.json
+.venv/bin/python evaluate.py --provider groq --scale small --ablation --out results_live.json
+
+# Or use the helper script; it also reads GROQ_API_KEY from .env:
+scripts/run_groq_experiment.sh
 
 # Anthropic backend (Haiku extractor + Sonnet synthesizer):
 export ANTHROPIC_API_KEY=sk-ant-...
-python evaluate.py --provider anthropic --scale small --ablation --out results.json
+.venv/bin/python evaluate.py --provider anthropic --scale small --ablation --out results.json
 
 # Full paper-scale suite (20 conversations):
-python evaluate.py --provider groq --scale paper --ablation --out results_paper.json
+.venv/bin/python evaluate.py --provider groq --scale paper --ablation --out results_paper.json
+
+# Pre-submission source/artifact audit:
+.venv/bin/python scripts/publication_audit.py
 ```
 
 ## Metrics
@@ -80,6 +97,25 @@ call, so the dataset is identical on every machine. Results in the paper were
 produced with the models named in `results_live.json["config"]` (Groq:
 `llama-3.1-8b-instant` extractor + `llama-3.3-70b-versatile` synthesizer, n=7).
 
+## Current artifacts
+
+- `results_live.json`: live Groq measured small-scale run used for the headline retention/cost results.
+- `FINDINGS.md`: compact statement of the measured findings and safe claims.
+- `results_growth_simulation.json`: deterministic token-accounting simulation over 14, 32, 60, 120, 240, and 480-message conversations.
+- `results_long_offline.json`: offline long-scale plumbing run for the new `--scale long` tier (not a scientific retention result because mock answers are heuristic).
+- `figures/architecture_flowchart.{pdf,png}`: method overview.
+- `figures/measured_results_bars.{pdf,png}`: measured Groq comparison.
+- `figures/retention_cost_frontier.{pdf,png}`: retention/cost frontier with bootstrap CIs.
+- `figures/cascade_ablation.{pdf,png}`: cheap-vs-expensive extractor ablation.
+- `figures/cost_vs_length_simulation.{pdf,png}`: deterministic long-horizon cost curve.
+- `examples/sample_notes_product_development.json`: qualitative notes-file example showing timestamped fact updates.
+
+## Research-integrity notes
+
+- The paper avoids copied passages and long quotations; related work is cited rather than reproduced.
+- `scripts/publication_audit.py` checks unresolved placeholders, missing bibliography entries, required artifacts, and accidental API-key leakage.
+- No tool can guarantee acceptance or guarantee that an automated AI-detector will classify the prose a certain way; use the audit as a reproducibility/originality hygiene check, not as an evasion tool.
+
 ## TODO — making this stronger
 
 The current evaluation establishes a favorable retention/cost trade-off at short
@@ -87,22 +123,22 @@ horizons. To turn that into a strong, publishable result, in rough priority
 order:
 
 **Experiments (highest impact)**
-- [ ] **Longer conversations (>100 messages).** This is where note-based memory
-  should actually *win* on tokens — the notes file stays bounded while raw
-  history grows. The current ≤56-message runs only show the trade-off, not the
-  asymptotic payoff. Run `--scale paper` and add a `--scale long` tier.
+- [x] **Longer conversations (>100 messages).** Added `--scale long` with 120,
+  240, and 480-message stress cases plus a deterministic cost-vs-length
+  simulation. A live long-horizon retention run is still needed before making
+  stronger quality claims.
 - [ ] **Larger n + significance.** n=7 gives very wide CIs (truncation retention
   CI is [14.3, 85.7]). Bump to ≥30 conversations per length bucket so the
   headline numbers are tight enough to defend.
-- [ ] **Plot the cost-vs-length curve.** Show the crossover point where
-  hierarchical cost drops below full-context. A single figure makes the whole
-  argument.
+- [x] **Plot the cost-vs-length curve.** `make_figures.py` writes the curve to
+  `figures/cost_vs_length_simulation.{pdf,png}`.
 - [ ] **Second model family.** Reproduce the 8B-beats-70B ablation on a non-Llama
   cascade (e.g. Haiku→Sonnet) to show the cascade result isn't Llama-specific.
 
 **Method**
-- [ ] **Notes compaction / dedup.** Append-only notes grow unbounded; add
-  periodic summarization of stale notes and conflict resolution by timestamp.
+- [x] **Notes compaction / dedup.** Added deterministic notes compaction and an
+  `--compact-notes` evaluation flag; future work should replace this heuristic
+  with learned or retrieval-aware compaction.
 - [ ] **Retrieval instead of full-notes injection.** For long runs, fetch only
   relevant notes (embeddings / vector store) rather than concatenating all of
   them — this is also what unlocks the token win.
@@ -112,12 +148,12 @@ order:
 **Rigor / repro**
 - [ ] **Real tokenizer for cumulative counts.** Replace `tiktoken/cl100k` on
   Llama outputs with the provider's tokenizer so cumulative ≈ real.
-- [ ] **CI smoke test.** Wire `--offline` run into a GitHub Action so the repo
+- [x] **CI smoke test.** Wire `--offline` run into a GitHub Action so the repo
   stays green.
-- [ ] **Pin dependency versions** in `requirements.txt`.
-- [ ] **Replace `REPO_URL_PLACEHOLDER`** in `main.tex` with the public repo URL.
+- [x] **Pin dependency versions** in `requirements.txt`.
+- [x] **Replace `REPO_URL_PLACEHOLDER`** in `main.tex` with the public repo URL.
 
 **Paper**
-- [ ] Add the cost-vs-length figure and a qualitative example of an extracted
-  notes file.
-- [ ] Reference Table~II / Table~III explicitly from the Results prose.
+- [x] Add the cost-vs-length figure.
+- [x] Add a qualitative example of an extracted notes file.
+- [x] Reference the results and ablation tables explicitly from the Results prose.

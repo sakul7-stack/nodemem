@@ -8,6 +8,7 @@
 .claude/settings.local.json
 
 # --- runtime / generated, not source ---
+.venv/
 __pycache__/
 *.pyc
 *.log

@@ -11,6 +11,7 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{hyperref}
+\graphicspath{{figures/}}
 
 \begin{document}
 
@@ -36,7 +37,7 @@ Lalitpur, Nepal \\
 \maketitle
 
 \begin{abstract}
-Large language model (LLM) agents incur token costs that grow super-linearly with conversation length, because every step re-sends an ever-growing history through the model. This makes long-running, enterprise-scale deployments economically fragile: autonomous agents routinely consume 20{,}000 to 100{,}000 tokens per task. This paper proposes \emph{persistent note-based memory}, a hierarchical architecture that combines model cascading with structured history summarization. A small, inexpensive model extracts salient information (entities, decisions, facts, goals, constraints, and action items) from conversation segments and appends it as structured notes to a persistent memory file. Subsequent turns reference this compressed memory alongside only the most recent messages, rather than the full transcript. We formalize the token-cost model, specify the extraction and note schema, and define an evaluation protocol -- metrics, baselines, and a synthetic conversation suite -- for measuring token reduction, cost savings, retention accuracy, and answer quality against full-context, truncation, and single-model summarization baselines. Measured results on synthetic fact-tracking conversations (up to 56 messages, 7 cases) show that hierarchical memory achieves 84.5\% retention at 108\% of full-context cost, outperforming truncation (43\% retention, 75\% cost) and running summary (97\% retention, 165\% cost). An ablation confirms that a cheap 8B extractor produces higher downstream retention (84.5\%) than an expensive 70B extractor (70.5\%), validating the cascade thesis. At the conversation lengths tested, the contribution is a favorable retention-vs-cost trade-off rather than large raw token reduction; asymptotic token wins require longer horizons and are stated as future work. We position the approach relative to recent agent-memory systems such as MemGPT and prompt-compression methods such as LLMLingua, and release an open-source reference implementation. This work offers practical guidance for token-efficient LLM agent deployment and contributes to the growing literature on memory optimization for agentic systems.
+Large language model (LLM) agents incur token costs that grow super-linearly with conversation length, because every step re-sends an ever-growing history through the model. This makes long-running, enterprise-scale deployments economically fragile: autonomous agents routinely consume 20{,}000 to 100{,}000 tokens per task. This paper proposes \emph{persistent note-based memory}, a hierarchical architecture that combines model cascading with structured history summarization. A small, inexpensive model extracts salient information (entities, decisions, facts, goals, constraints, and action items) from conversation segments and appends it as structured notes to a persistent memory file. Subsequent turns reference this compressed memory alongside only the most recent messages, rather than the full transcript. We formalize the token-cost model, specify the extraction and note schema, and define an evaluation protocol -- metrics, baselines, and a synthetic conversation suite -- for measuring token reduction, cost savings, retention accuracy, and answer quality against full-context, truncation, and single-model summarization baselines. Measured results on synthetic fact-tracking conversations (up to 56 messages, 7 cases) show that hierarchical memory achieves 84.5\% retention at 108\% of full-context cost, outperforming truncation (43\% retention, 75\% cost) and running summary (97\% retention, 165\% cost). An ablation confirms that a cheap 8B extractor produces higher downstream retention (84.5\%) than an expensive 70B extractor (70.5\%), validating the cascade thesis. At the conversation lengths tested, the contribution is a favorable retention-vs-cost trade-off rather than large raw token reduction; a deterministic long-horizon token-accounting simulation shows that bounded notes reduce cost to 13.0\% of full-context cost at 480 messages, motivating live long-horizon validation. We position the approach relative to recent agent-memory systems such as MemGPT and prompt-compression methods such as LLMLingua, and release an open-source reference implementation. This work offers practical guidance for token-efficient LLM agent deployment and contributes to the growing literature on memory optimization for agentic systems.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -125,27 +126,7 @@ Our hierarchical memory system comprises three components operating in sequence:
 
 \begin{figure}[t]
 \centering
-\setlength{\fboxsep}{6pt}
-\framebox[\columnwidth][c]{
-\begin{minipage}{0.92\columnwidth}
-\centering
-\scriptsize
-\textbf{Architecture Diagram}\\[0.4em]
-\begin{tabular}{c}
-\textbf{Recent Messages} \\
-(Last 5 to 10 turns) \\
-$\downarrow$ \\
-\textbf{Small Model Extractor} \\
-($\phi_{\text{small}}$) \\
-$\downarrow$ \\
-\textbf{Persistent Notes File} \\
-$\mathcal{N} = \{n_1, n_2, \dots, n_t\}$ \\
-$\downarrow$ \\
-\textbf{Large Model Synthesis} \\
-($\phi_{\text{large}}$)
-\end{tabular}
-\end{minipage}
-}
+\includegraphics[width=\columnwidth]{architecture_flowchart.pdf}
 \caption{Hierarchical memory architecture.}
 \label{fig:architecture}
 \end{figure}
@@ -220,6 +201,8 @@ We generate 20 synthetic conversation test cases with varying lengths:
 
 Topics include product development, research planning, travel booking, technical debugging, and business strategy. Each conversation includes embedded critical information (entities, decisions, facts) for retention evaluation.
 
+For deterministic cost-growth analysis, the released generator also includes a stress tier with 120, 240, and 480-message conversations. This tier is used only for local token-accounting simulation unless live API credentials are supplied.
+
 \subsection{Evaluation Metrics}
 
 \begin{table}[h]
@@ -272,11 +255,18 @@ Running Summary & 17.2\% & 97.1\% & 100.0\% & 165.2\% \\
 \end{tabular}
 \end{table}
 
-At the conversation lengths tested ($\le$56 messages), the contribution of hierarchical note-based memory is a favorable \textbf{retention-vs-cost trade-off} rather than large raw-token reduction. Hierarchical memory achieves 84.5\% retention (95\% CI: [73.8, 95.2]) at 108.4\% of full-context cost (CI: [94.8, 120.8]), whereas the two bounded-context baselines either collapse on retention (truncation: 42.9\%, CI: [14.3, 85.7]) or exceed full-context cost (running summary: 165.2\%, CI: [137.6, 189.4]). Latency overhead is negligible ($-0.059$ s). Absolute extractor spend over the run was \$0.00046; summary-maintenance spend was \$0.00291. The cumulative token-reduction figure (via \texttt{tiktoken}) is $-3.7\%$ (CI: [$-14.8$, $8.8$]), reflecting that the notes file plus recent window can exceed a short raw history at these lengths. Asymptotic token wins require longer conversations and are stated as future work, not claimed here.
+Table~\ref{tab:results} shows that, at the conversation lengths tested ($\le$56 messages), the contribution of hierarchical note-based memory is a favorable \textbf{retention-vs-cost trade-off} rather than large raw-token reduction. Hierarchical memory achieves 84.5\% retention (95\% CI: [73.8, 95.2]) at 108.4\% of full-context cost (CI: [94.8, 120.8]), whereas the two bounded-context baselines either collapse on retention (truncation: 42.9\%, CI: [14.3, 85.7]) or exceed full-context cost (running summary: 165.2\%, CI: [137.6, 189.4]). Figure~\ref{fig:frontier} visualizes this retention/cost frontier. Latency overhead is negligible ($-0.059$ s). Absolute extractor spend over the run was \$0.00046; summary-maintenance spend was \$0.00291. The cumulative token-reduction figure (via \texttt{tiktoken}) is $-3.7\%$ (CI: [$-14.8$, $8.8$]), reflecting that the notes file plus recent window can exceed a short raw history at these lengths. Asymptotic token wins require longer conversations and are stated as future work, not claimed here.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{retention_cost_frontier.pdf}
+\caption{Retention/cost frontier for the measured Groq run. Error bars show 95\% bootstrap confidence intervals over conversations.}
+\label{fig:frontier}
+\end{figure}
 
 \subsection{Cascade Ablation: Cheap vs. Expensive Extractor}
 
-To directly test the model-cascading hypothesis, we ran an ablation comparing the standard 8B extractor against a 70B extractor (same model as the synthesizer). The ablation held everything else constant: same conversations, same notes schema, same recent window size, same synthesizer. The results validate the central claim of this paper:
+To directly test the model-cascading hypothesis, we ran an ablation comparing the standard 8B extractor against a 70B extractor (same model as the synthesizer). The ablation held everything else constant: same conversations, same notes schema, same recent window size, same synthesizer. Table~\ref{tab:ablation} reports the result, which validates the central claim of this paper:
 
 \begin{table}[h]
 \centering
@@ -294,6 +284,44 @@ To directly test the model-cascading hypothesis, we ran an ablation comparing th
 
 The cheap extractor is not merely \emph{adequate} -- it produces \emph{higher} retention than the expensive one. We hypothesize that structured fact extraction rewards concise, literal copying; the larger model tended to paraphrase and compress away exact tokens that the containment-based QA needed. This result directly supports delegating the memory-write step to the cheap model: you gain both cost savings \emph{and} quality. It is the clearest positive result of this evaluation.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\columnwidth]{cascade_ablation.pdf}
+\caption{Extractor-size ablation: the cheap 8B extractor produced higher downstream retention than the 70B extractor under the same synthesizer and scoring protocol.}
+\label{fig:ablation}
+\end{figure}
+
+\subsection{Long-Horizon Token-Growth Simulation}
+
+Because the live run is short, we additionally ran a deterministic token-accounting simulation over 14, 32, 60, 120, 240, and 480-message conversations. This simulation uses the seeded dataset generator, the same context-building code, \texttt{tiktoken}/\texttt{cl100k} local token counts, Groq prices, deterministic offline note extraction, and an optional note-compaction rule that keeps at most 8 notes. It is not a live retention result; it only tests the cost-growth shape.
+
+\begin{table}[h]
+\centering
+\caption{Deterministic Cost vs. Conversation Length (\% of Full Context)}
+\label{tab:growth}
+\begin{tabular}{rccc}
+\toprule
+\textbf{Messages} & \textbf{Trunc.} & \textbf{Hier.} & \textbf{Hier. + comp.} \\
+\midrule
+14 & 96.3\% & 121.7\% & 121.7\% \\
+32 & 61.4\% & 91.1\% & 91.1\% \\
+60 & 37.7\% & 73.3\% & 71.9\% \\
+120 & 20.8\% & 51.9\% & 42.3\% \\
+240 & 11.0\% & 42.0\% & 24.0\% \\
+480 & 5.7\% & 36.3\% & 13.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:cost-growth} shows the same result as a curve. The key finding is that append-only notes are not sufficient for maximum long-horizon efficiency: they beat full context after short warm-up, but bounded notes are far better by 480 messages (13.0\% versus 36.3\% of full-context cost). This motivates retrieval and compaction as necessary components of a production memory layer.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{cost_vs_length_simulation.pdf}
+\caption{Deterministic long-horizon cost simulation. Full context is normalized to 100\% at each length; hierarchical methods include extractor maintenance cost.}
+\label{fig:cost-growth}
+\end{figure}
+
 Key advantages validated by measurement:
 \begin{itemize}
     \item \textbf{Structured extraction}: Unlike naive summarization, we extract specific categories (entities, decisions, facts)
@@ -310,18 +338,23 @@ To support reproducibility, we release an open-source reference implementation o
 \begin{itemize}
     \item \texttt{hierarchical\_memory.py} -- the \texttt{HierarchicalMemory} class, which wraps a small extractor model ($\phi_{\text{small}}$) and a large synthesizer model ($\phi_{\text{large}}$). It loads and persists the append-only notes file (Section~\ref{sec:notes-format}), extracts structured key information from each conversation segment, and assembles the compressed context (notes plus recent messages) used to generate each response.
     \item \texttt{token\_utils.py} -- token-counting and reduction utilities built on \texttt{tiktoken}, implementing the Token Reduction and Cost Savings metrics of Table~\ref{tab:metrics}.
-    \item \texttt{evaluate.py} -- a harness that runs the four baselines of Section~\ref{sec:baselines} over the synthetic conversation suite and reports the metrics of Table~\ref{tab:metrics}.
-    \item Synthetic conversation generators, a \texttt{requirements.txt}, and a \texttt{README} documenting setup and usage.
+    \item \texttt{evaluate.py} -- a harness that runs the four baselines of Section~\ref{sec:baselines} over the synthetic conversation suite, supports the long-horizon stress tier and notes compaction, and reports the metrics of Table~\ref{tab:metrics}.
+    \item \texttt{make\_figures.py} -- a deterministic artifact generator for the architecture diagram, measured-result plots, and cost-vs-length simulation.
+    \item Synthetic conversation generators, a qualitative notes example in \texttt{examples/sample\_notes\_product\_development.json}, pinned dependencies in \texttt{requirements.txt}, a continuous-integration smoke test, and a \texttt{README} documenting setup and usage.
 \end{itemize}
 
-The provider interface is abstracted so the small and large models can be backed by any chat-completions-compatible API; the released harness includes both an Anthropic backend and an OpenAI-compatible backend, and the evaluation in Section~\ref{sec:results} was run through the latter against the Groq inference service. Token counts are taken from the provider's own \texttt{usage} accounting rather than estimated with \texttt{tiktoken}, which is an OpenAI tokenizer and mis-counts other model families. The complete source, the seeded conversation generator, and the raw results file are available at \url{REPO_URL_PLACEHOLDER}.
+The provider interface is abstracted so the small and large models can be backed by any chat-completions-compatible API; the released harness includes both an Anthropic backend and an OpenAI-compatible backend, and the evaluation in Section~\ref{sec:results} was run through the latter against the Groq inference service. Token counts are taken from the provider's own \texttt{usage} accounting rather than estimated with \texttt{tiktoken}, which is an OpenAI tokenizer and mis-counts other model families. The complete source, seeded conversation generator, raw results, and generated figures are available at \url{https://github.com/sakul7-stack/nodemem}.
+
+\subsection{Research Integrity and Reproducibility}
+
+The evaluation data are generated synthetically by the released code rather than copied from proprietary or copyrighted conversations. The manuscript uses original prose, avoids long quotations, and attributes related methods through the citations in the bibliography. The repository also includes a pre-submission audit script that checks unresolved placeholders, citation coverage, required result artifacts, and accidental API-key leakage. This does not certify acceptance, but it makes the empirical claims and supporting artifacts independently inspectable.
 
 \section{Discussion}
 
 \subsection{Limitations}
 
 \begin{enumerate}
-    \item \textbf{Conversation length}: Results are at $\le$56 messages. The token-reduction case for note-based memory is asymptotic; the notes file remains bounded while raw history grows linearly. At the short horizons tested, raw token reduction is modest (15.4\% real, $-3.7\%$ cumulative). The contribution validated here is the retention/cost trade-off, not large raw savings. Longer evaluations ($>$100 messages) are needed to demonstrate cumulative token wins.
+    \item \textbf{Conversation length}: Live retention results are at $\le$56 messages. The deterministic simulation in Table~\ref{tab:growth} supports the expected cost-growth shape, but it does not measure live answer quality. Longer live evaluations ($>$100 messages) are needed to jointly demonstrate cumulative token wins and retention.
 
     \item \textbf{Extraction errors}: Small model may miss critical information. \textit{Mitigation}: Use high-quality extraction prompts with explicit examples, validate with human review on critical conversations.
 
@@ -329,13 +362,13 @@ The provider interface is abstracted so the small and large models can be backed
 
     \item \textbf{Tokenizer mismatch}: Cumulative token counts use \texttt{tiktoken} (OpenAI) on Llama outputs and are approximate. Real per-query counts use the provider's own \texttt{usage} and are exact.
 
-    \item \textbf{File growth}: Notes file grows indefinitely. \textit{Mitigation}: Periodic compression via summarization of old notes, vector database for scalable retrieval with semantic search \cite{karpukhin2020dense}.
+    \item \textbf{File growth}: Append-only notes grow indefinitely. \textit{Mitigation}: The reference implementation now includes deterministic notes compaction and an evaluation flag for bounded notes, but production systems should use retrieval or learned compaction with explicit conflict handling \cite{karpukhin2020dense}.
 \end{enumerate}
 
 \subsection{Future Work}
 
 \begin{itemize}
-    \item \textbf{Longer-horizon evaluation}: Extend the test suite to $>$100 messages per conversation to measure asymptotic token reduction as the notes file remains bounded while raw history grows. Current results validate the retention/cost trade-off; cumulative token wins require longer horizons.
+    \item \textbf{Longer-horizon live evaluation}: Run the new $>$100-message stress tier with live models to measure retention and cost simultaneously. Current live results validate the retention/cost trade-off; the deterministic simulation validates only the cost-growth direction.
     \item \textbf{Vector database integration}: Replace file-based notes with vector store (e.g., ChromaDB, FAISS) for semantic retrieval \cite{karpukhin2020dense}
     \item \textbf{Adaptive extraction}: Dynamically adjust extraction granularity based on conversation complexity using uncertainty estimation
     \item \textbf{Multi-agent coordination}: Share notes across collaborative agents for coordinated task execution \cite{zhou2024agents}
@@ -347,7 +380,7 @@ The provider interface is abstracted so the small and large models can be backed
 
 This paper presents a hierarchical memory architecture that applies the model-cascading insight to the memory-write step: a cheap extractor maintains a persistent, structured notes file, and an expensive model synthesizes responses from those notes plus a short recent-message window. On synthetic fact-tracking conversations ($\le$56 messages), the architecture delivers a favorable retention-versus-cost trade-off -- 84.5\% retention at 108.4\% of full-context cost -- dominating bounded-context baselines that either collapse on retention (truncation, 42.9\%) or overshoot cost (running summary, 165.2\%). A controlled ablation confirms the central thesis: a cheap 8B extractor yields \emph{higher} downstream retention (84.5\%) than an expensive 70B extractor (70.5\%), so delegating memory writes to the small model buys both cost savings and quality.
 
-Because the notes file stays bounded while raw history grows linearly, the token-reduction advantage is asymptotic; at the short horizons tested it is modest (15.4\% real, $-3.7\%$ cumulative), and demonstrating large cumulative savings requires the longer-horizon evaluation we leave to future work. We release an open-source reference implementation, the seeded conversation generator, and the raw results to support reproduction. This contribution advances the emerging field of memory optimization for agentic systems and provides a foundation for economically sustainable AI agent infrastructure.
+Because bounded notes grow much more slowly than raw history, the token-reduction advantage is asymptotic; at the short horizons tested it is modest (15.4\% real, $-3.7\%$ cumulative). A deterministic cost simulation shows the expected crossover and reaches 13.0\% of full-context cost at 480 messages with note compaction, but live long-horizon retention remains future work. We release an open-source reference implementation, the seeded conversation generator, raw results, and generated figures to support reproduction. This contribution advances the emerging field of memory optimization for agentic systems and provides a foundation for economically sustainable AI agent infrastructure.
 
 \section*{Acknowledgment}
 

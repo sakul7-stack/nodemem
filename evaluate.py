@@ -24,6 +24,8 @@ available, pass distinct --extract-model / --synth-model and --ablation.
 
 Usage:
   python evaluate.py --offline --scale tiny                 # no API
+    python evaluate.py --offline --scale long --compact-notes 8 \
+                --out results_long_offline.json                     # long stress smoke test
   python evaluate.py --scale tiny --synth-model claude-opus-4-8 \
         --extract-model claude-opus-4-8 --throttle 3.4 --out results.json
 """
@@ -32,6 +34,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import statistics
 import sys
@@ -51,6 +54,22 @@ from token_utils import (
 RECENT_K = 6
 SEGMENT_SIZE = 6
 TRUNCATE_K = 10
+
+
+def load_dotenv_if_present(path: str = ".env") -> None:
+    """Load simple KEY=VALUE pairs from ``.env`` without printing secrets."""
+    if not os.path.exists(path):
+        return
+    with open(path, "r", encoding="utf-8") as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = value
 
 
 # --------------------------------------------------------------------------- #
@@ -110,10 +129,21 @@ def build_summary(client, case: Case, synth_model: str):
     return c.text, c.input_tokens, c.output_tokens
 
 
-def token_curve(case: Case, notes: NotesFile, summary: str):
+def compacted_notes_copy(notes: NotesFile, max_notes: int) -> NotesFile:
+    """Replay notes into a new store while applying deterministic compaction."""
+    out = NotesFile()
+    for note in notes.notes:
+        out.notes.append(note)
+        out.compact(max_notes=max_notes)
+    return out
+
+
+def token_curve(case: Case, notes: NotesFile, summary: str, compact_notes: int = 0):
     """Cumulative large-model INPUT tokens per strategy (local tiktoken).
 
     Notes/summary become progressively available as segments complete.
+    If ``compact_notes`` is non-zero, the hierarchical notes store is compacted
+    after each completed segment to model bounded long-horizon memory.
     """
     strategies = {
         "full_context": FullContext(),
@@ -144,6 +174,8 @@ def token_curve(case: Case, notes: NotesFile, summary: str):
         while seg_index < n_segments and (turn_i + 1) >= (seg_index + 1) * SEGMENT_SIZE:
             if seg_index < len(notes.notes):
                 inc_notes.notes.append(notes.notes[seg_index])
+                if compact_notes:
+                    inc_notes.compact(max_notes=compact_notes)
             seg_index += 1
     return totals
 
@@ -205,7 +237,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--offline", action="store_true")
     ap.add_argument("--provider", choices=["anthropic", "groq"], default="anthropic")
-    ap.add_argument("--scale", choices=["tiny", "small", "paper"], default="tiny")
+    ap.add_argument("--scale", choices=["tiny", "small", "paper", "long"], default="tiny")
     ap.add_argument("--max-cases", type=int, default=0)
     ap.add_argument("--synth-model", default=None)
     ap.add_argument("--extract-model", default=None,
@@ -216,9 +248,12 @@ def main():
                     help="min seconds between API calls (for rate-limited proxies)")
     ap.add_argument("--ablation", action="store_true",
                     help="also build notes with the synth model (expensive extractor) and compare retention")
+    ap.add_argument("--compact-notes", type=int, default=0,
+                    help="compact hierarchical notes to at most this many entries after each segment")
     ap.add_argument("--out", default="results.json")
     ap.add_argument("--seed", type=int, default=7)
     args = ap.parse_args()
+    load_dotenv_if_present()
 
     # Provider defaults
     if args.provider == "groq":
@@ -233,12 +268,21 @@ def main():
     if args.offline:
         client = MockLLMClient()
     elif args.provider == "groq":
-        import os
+        if not os.environ.get("GROQ_API_KEY"):
+            raise SystemExit(
+                "GROQ_API_KEY is required for live Groq experiments. "
+                "Set it in the environment or add GROQ_API_KEY=... to .env."
+            )
         client = OpenAICompatClient(
             api_key=os.environ.get("GROQ_API_KEY"),
             base_url="https://api.groq.com/openai/v1",
             min_interval_s=args.throttle)
     else:
+        if not os.environ.get("ANTHROPIC_API_KEY"):
+            raise SystemExit(
+                "ANTHROPIC_API_KEY is required for live Anthropic experiments. "
+                "Set it in the environment or add ANTHROPIC_API_KEY=... to .env."
+            )
         client = LLMClient(min_interval_s=args.throttle)
     suite = build_suite(seed=args.seed, scale=args.scale)
     if args.max_cases:
@@ -266,6 +310,7 @@ def main():
                 "synth_model": args.synth_model, "extract_model_called": args.extract_model,
                 "extract_price_tier": args.price_extract,
                 "recent_k": RECENT_K, "truncate_k": TRUNCATE_K, "segment_size": SEGMENT_SIZE,
+                "compact_notes": args.compact_notes,
                 "token_counter": "tiktoken/cl100k (cumulative); provider usage (per-query real)",
                 "seed": args.seed, "elapsed_s": round(time.time() - t0, 1),
             },
@@ -300,9 +345,10 @@ def main():
         print(f"[{ci+1}/{len(suite)}] {case.id} ({len(case.messages)} msgs, "
               f"{len(case.facts)} facts)  t={time.time()-t0:.0f}s", file=sys.stderr)
         try:
-            notes, ex_in, ex_out, exlat = build_notes(client, case, args.extract_model)
+            raw_notes, ex_in, ex_out, exlat = build_notes(client, case, args.extract_model)
+            notes = compacted_notes_copy(raw_notes, args.compact_notes) if args.compact_notes else raw_notes
             summary, sm_in, sm_out = build_summary(client, case, args.synth_model)
-            curve = token_curve(case, notes, summary)
+            curve = token_curve(case, raw_notes, summary, compact_notes=args.compact_notes)
             qa = run_qa(client, case, args.synth_model, notes, summary)
         except Exception as e:
             print(f"  !! case {case.id} failed ({type(e).__name__}: {str(e)[:80]}); skipping",
@@ -344,7 +390,9 @@ def main():
         if args.ablation and not args.offline and args.extract_model != args.synth_model:
             try:
                 ablation["cheap"].append(acc["hierarchical"]["retention"][-1])
-                notes_x, *_ = build_notes(client, case, args.synth_model)
+                raw_notes_x, *_ = build_notes(client, case, args.synth_model)
+                notes_x = (compacted_notes_copy(raw_notes_x, args.compact_notes)
+                           if args.compact_notes else raw_notes_x)
                 qa_x = run_qa(client, case, args.synth_model, notes_x, summary)
                 ablation["expensive"].append(
                     qa_x["hierarchical"]["correct"] / qa_x["hierarchical"]["total"] * 100
@@ -358,8 +406,12 @@ def main():
         # Incremental save so a later failure never wipes completed work.
         with open(args.out, "w", encoding="utf-8") as f:
             json.dump(build_results(), f, indent=2)
+            f.write("\n")
 
     results = build_results()
+    with open(args.out, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2)
+        f.write("\n")
     print(json.dumps(results, indent=2))
     print(f"\nWrote {args.out} ({done_cases}/{len(suite)} cases, "
           f"{time.time()-t0:.0f}s)", file=sys.stderr)

@@ -1,1 +1,4 @@
-anthropic>=0.40
+anthropic==0.112.0
+openai==2.44.0
+tiktoken==0.13.0
+matplotlib==3.11.0

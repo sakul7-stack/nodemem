@@ -1,17 +1,20 @@
 {
   "config": {
     "offline": true,
+    "provider": "anthropic",
     "scale": "tiny",
-    "n_cases": 6,
+    "n_cases_requested": 6,
+    "n_cases_completed": 6,
     "synth_model": "claude-opus-4-8",
     "extract_model_called": "claude-opus-4-8",
     "extract_price_tier": "claude-haiku-4-5",
     "recent_k": 6,
     "truncate_k": 10,
     "segment_size": 6,
-    "token_counter": "tiktoken/cl100k (cumulative); Anthropic usage (per-query real)",
+    "compact_notes": 0,
+    "token_counter": "tiktoken/cl100k (cumulative); provider usage (per-query real)",
     "seed": 7,
-    "elapsed_s": 0.3
+    "elapsed_s": 0.5
   },
   "strategies": {
     "full_context": {
