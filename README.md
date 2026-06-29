@@ -1,26 +1,29 @@
-# Persistent Note-Based Memory for Token-Efficient LLM Agents
+# Persistent Note-Based Memory Pilot Study
 
 Reference implementation and evaluation harness for the paper
-*"Persistent Note-Based Memory for Token-Efficient LLM Agents: A Hierarchical,
-Model-Cascading Alternative to Full-Context Conversations."*
+*"Persistent Note-Based Memory for LLM Agents: A Pilot Study of Cost,
+Retention, and Scaling Limits."*
 
 A cheap model (the **extractor**) reads conversation segments and writes
 structured, append-only **notes**; an expensive model (the **synthesizer**)
 answers each turn from those notes plus a short recent-message window instead of
-the full transcript. This trades a small, cheap extraction cost for a large
-reduction in expensive-model input tokens.
+the full transcript. The live n=16 result does **not** show a cost-saving win over
+full context at <=56 messages; this repository therefore frames the work as a
+pilot/cautionary study plus a reproducible path toward the longer-horizon
+experiments needed to validate the idea.
 
 ## What's here
 
 | File | Purpose |
 |------|---------|
 | `hierarchical_memory.py` | `HierarchicalMemory`, the append-only `NotesFile`, the provider abstraction (Anthropic + an offline mock), and the four comparison strategies. |
-| `token_utils.py` | Token counting via the **real Anthropic tokenizer** (`count_tokens`) and a cost model that includes the extractor and notes-growth terms. |
+| `token_utils.py` | Provider-usage and local `tiktoken` token accounting plus a cost model that includes extractor and notes-growth terms. |
 | `datasets.py` | Deterministic synthetic conversation suite with planted facts and adversarial **fact-update** probes. |
 | `evaluate.py` | Runs all baselines, measures token reduction / cost / retention / latency, supports the cheap-vs-expensive-extractor **ablation**, long-horizon stress scale, and optional notes compaction. |
 | `make_figures.py` | Rebuilds publication figures and the deterministic long-horizon cost simulation. |
 | `FINDINGS.md` | Concise measured findings, long-horizon simulation interpretation, and live-rerun status. |
-| `scripts/` | Reproducibility helpers for live Groq reruns and publication-readiness checks. |
+| `NEXT_EXPERIMENT.md` | Proposed fact-slot memory experiment to test a more compact latest-value memory representation. |
+| `scripts/` | Reproducibility helpers for live Groq reruns, result aggregation, paired analysis, and publication-readiness checks. |
 | `figures/` | Generated PDF/PNG figures for the paper and report. |
 
 ## Baselines
@@ -48,10 +51,28 @@ python -m venv .venv
 # Real measured run used for the paper (Groq: llama-3.1-8b-instant extractor
 # + llama-3.3-70b-versatile synthesizer):
 export GROQ_API_KEY=gsk_...
-.venv/bin/python evaluate.py --provider groq --scale small --ablation --out results_live.json
+.venv/bin/python evaluate.py --provider groq --scale small --ablation --out results_live_rerun.json
 
-# Or use the helper script; it also reads GROQ_API_KEY from .env:
+# Multiple Groq keys can also be supplied in .env as:
+# GROQ_API_KEYS=key1,key2
+
+# Or use the helper script; it reads GROQ_API_KEY or GROQ_API_KEYS from .env:
 scripts/run_groq_experiment.sh
+
+# Optional replication seed and n=16 aggregate used by the current paper draft:
+scripts/run_groq_experiment.sh --provider groq --scale small --seed 8 --ablation --out results_live_seed8.json
+.venv/bin/python scripts/aggregate_results.py results_live_rerun.json results_live_seed8.json --out results_live_aggregate.json
+.venv/bin/python make_figures.py --results results_live_aggregate.json
+
+# Future runs now include raw per-case metrics, enabling paired analysis:
+.venv/bin/python scripts/paired_analysis.py results_paper.json --out paired_results.json
+
+# New experimental approach: latest-value fact-slot memory
+.venv/bin/python evaluate.py --offline --scale tiny --slot-memory --out /tmp/nodemem_slot_tiny.json
+scripts/run_groq_experiment.sh --provider groq --scale small --seed 9 --slot-memory --out results_live_slot_seed9.json
+scripts/run_groq_experiment.sh --provider groq --scale small --seed 10 --slot-memory --out results_live_slot_seed10.json
+.venv/bin/python scripts/aggregate_results.py results_live_slot_seed9.json results_live_slot_seed10.json --out results_live_slot_aggregate.json
+.venv/bin/python scripts/paired_analysis.py results_live_slot_aggregate.json --method slot_memory --baselines full_context hierarchical truncation running_summary --out results_live_slot_paired.json
 
 # Anthropic backend (Haiku extractor + Sonnet synthesizer):
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -66,8 +87,8 @@ export ANTHROPIC_API_KEY=sk-ant-...
 
 ## Metrics
 
-- **Token reduction** — cumulative *input* tokens sent to the large model over a
-  conversation, relative to full context (exact `count_tokens`).
+- **Token reduction** — real per-query prompt tokens from provider `usage`, plus
+  cumulative local-token counts for cost-growth shape, both relative to full context.
 - **Cost** — USD as a percentage of the full-context baseline, **including** the
   cheap extractor and running-summary maintenance.
 - **Retention** — QA accuracy on planted facts; reported separately for the
@@ -85,7 +106,7 @@ Two counts are reported, and neither is a char heuristic:
   tokenizer and its absolute counts differ from Llama/Claude by ~15–20%, so it is
   never used for billed figures.
 
-The paper run (`results_live.json`) used the Groq OpenAI-compatible backend, so
+The paper reruns (`results_live_rerun.json` and `results_live_seed8.json`) used the Groq OpenAI-compatible backend, so
 per-query counts come from Groq's `usage`. On the Anthropic backend, real counts
 come from `messages.count_tokens` / `usage` instead. Pure char heuristics appear
 only in `--offline` mode and are never reported as measured results.
@@ -94,18 +115,30 @@ only in `--offline` mode and are never reported as measured results.
 
 The conversation suite is seeded (`--seed`, default 7) and built without any API
 call, so the dataset is identical on every machine. Results in the paper were
-produced with the models named in `results_live.json["config"]` (Groq:
-`llama-3.1-8b-instant` extractor + `llama-3.3-70b-versatile` synthesizer, n=7).
+produced with the models named in `results_live_aggregate.json["config"]` (Groq:
+`llama-3.1-8b-instant` extractor + `llama-3.3-70b-versatile` synthesizer, n=16
+across seeds 7 and 8). The aggregate pools run-level summaries, so its 95%
+intervals are normal approximations; the per-seed files retain their original
+bootstrap summaries. New evaluator outputs include `case_metrics`, and
+`scripts/paired_analysis.py` can compute paired method-vs-baseline differences;
+the existing n=16 live artifacts were generated before raw case rows were added.
 
 ## Current artifacts
 
-- `results_live.json`: live Groq measured small-scale run used for the headline retention/cost results.
+- `results_live_aggregate.json`: current live Groq aggregate for the paper (16/16 cases across seeds 7 and 8); mixed/negative versus full context at short horizon.
+- `results_live_rerun.json`: fresh seed-7 live Groq measured small-scale run (8/8 cases completed).
+- `results_live_seed8.json`: seed-8 replication live Groq measured small-scale run (8/8 cases completed).
+- `results_live.json`: earlier live Groq run retained for comparison.
+- `results_live_slot_seed9.json`, `results_live_slot_seed10.json`: live fact-slot memory pilots (16/16 total cases completed).
+- `results_live_slot_aggregate.json`: fact-slot memory aggregate; slot memory reached 85.2% retention at 89.1% of full-context cost.
+- `results_live_slot_paired.json`: paired comparisons for the fact-slot strategy.
 - `FINDINGS.md`: compact statement of the measured findings and safe claims.
+- `NEXT_EXPERIMENT.md`: fact-slot memory hypothesis, commands, and success criteria.
 - `results_growth_simulation.json`: deterministic token-accounting simulation over 14, 32, 60, 120, 240, and 480-message conversations.
 - `results_long_offline.json`: offline long-scale plumbing run for the new `--scale long` tier (not a scientific retention result because mock answers are heuristic).
 - `figures/architecture_flowchart.{pdf,png}`: method overview.
 - `figures/measured_results_bars.{pdf,png}`: measured Groq comparison.
-- `figures/retention_cost_frontier.{pdf,png}`: retention/cost frontier with bootstrap CIs.
+- `figures/retention_cost_frontier.{pdf,png}`: retention/cost frontier with 95% intervals.
 - `figures/cascade_ablation.{pdf,png}`: cheap-vs-expensive extractor ablation.
 - `figures/cost_vs_length_simulation.{pdf,png}`: deterministic long-horizon cost curve.
 - `examples/sample_notes_product_development.json`: qualitative notes-file example showing timestamped fact updates.
@@ -118,8 +151,8 @@ produced with the models named in `results_live.json["config"]` (Groq:
 
 ## TODO — making this stronger
 
-The current evaluation establishes a favorable retention/cost trade-off at short
-horizons. To turn that into a strong, publishable result, in rough priority
+The current evaluation is a pilot and does not establish a cost-saving win over
+full context. To turn this into a stronger publishable result, in rough priority
 order:
 
 **Experiments (highest impact)**
@@ -127,13 +160,25 @@ order:
   240, and 480-message stress cases plus a deterministic cost-vs-length
   simulation. A live long-horizon retention run is still needed before making
   stronger quality claims.
-- [ ] **Larger n + significance.** n=7 gives very wide CIs (truncation retention
-  CI is [14.3, 85.7]). Bump to ≥30 conversations per length bucket so the
+- [ ] **Larger n + significance.** n=16 still gives wide CIs (hierarchical
+  retention CI is [59.6, 79.2]). Bump to ≥30 conversations per length bucket so the
   headline numbers are tight enough to defend.
+- [ ] **Retention under compaction.** The 480-message 13.0% cost result is
+  retention-blind. Run live QA with `--compact-notes 8` before claiming quality
+  at long horizons.
+- [x] **New representation to try.** Added optional `--slot-memory`, a latest-
+  value fact-slot strategy designed to reduce prompt size and handle updates.
+- [x] **Live fact-slot pilot.** Seeds 9 and 10 completed. Fact-slot memory was
+  cheaper and higher-retention than append-only notes, but update retention still
+  needs work.
+- [x] **Raw per-case metrics.** Future evaluator outputs include `case_metrics`
+  so paired tests can be run.
+- [x] **Paired-analysis helper.** `scripts/paired_analysis.py` computes paired
+  method-vs-baseline differences for outputs with `case_metrics`.
 - [x] **Plot the cost-vs-length curve.** `make_figures.py` writes the curve to
   `figures/cost_vs_length_simulation.{pdf,png}`.
-- [ ] **Second model family.** Reproduce the 8B-beats-70B ablation on a non-Llama
-  cascade (e.g. Haiku→Sonnet) to show the cascade result isn't Llama-specific.
+- [ ] **Second model family.** Reproduce the extractor ablation on a non-Llama
+  cascade (e.g. Haiku→Sonnet) to test whether the inconclusive Llama result generalizes.
 
 **Method**
 - [x] **Notes compaction / dedup.** Added deterministic notes compaction and an

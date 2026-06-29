@@ -9,7 +9,7 @@ Public surface
 * ``Note`` / ``NotesFile`` : the append-only, conflict-aware notes store.
 * ``HierarchicalMemory`` : the proposed method (cheap extractor + notes + recent).
 * Strategy classes (``FullContext``, ``Truncation``, ``RunningSummary``,
-  ``Hierarchical``) sharing a common ``build_context`` interface so the
+    ``Hierarchical``, ``SlotMemory``) sharing a common ``build_context`` interface so the
   evaluator can treat them uniformly.
 
 Every strategy answers a query against a *conversation history* (a list of
@@ -179,12 +179,21 @@ class OpenAICompatClient:
         for attempt in range(max_attempts):
             self._throttle()
             t0 = time.time()
-            client = self._clients[self._client_index]
+            client = self._clients[self._client_index % len(self._clients)]
             self._client_index = (self._client_index + 1) % len(self._clients)
             try:
                 resp = client.chat.completions.create(
                     model=model, max_tokens=max_tokens, messages=oai_msgs)
                 break
+            except (openai.AuthenticationError, openai.PermissionDeniedError):
+                # If one key is invalid/disabled, drop only that client and try
+                # the next key. Never log the key value.
+                if len(self._clients) <= 1:
+                    raise
+                failed_index = (self._client_index - 1) % len(self._clients)
+                self._clients.pop(failed_index)
+                self._client_index = self._client_index % len(self._clients)
+                time.sleep(0.5)
             except openai.RateLimitError as e:
                 # Honor Retry-After when present (Groq returns it for TPM limits).
                 ra = None
@@ -233,7 +242,9 @@ class MockLLMClient:
 
     def complete(self, model, system, messages, max_tokens: int = 1024) -> Completion:
         user_text = "\n".join(m["content"] for m in messages if m["role"] == "user")
-        if system and "extract" in (system or "").lower():
+        if system and "fact slots" in (system or "").lower():
+            text = json.dumps({"facts": [asdict(f) for f in parse_slot_facts(user_text)]})
+        elif system and "extract" in (system or "").lower():
             note = _heuristic_extract(user_text)
             text = json.dumps(note)
         else:
@@ -279,6 +290,40 @@ class Note:
     facts: list[str] = field(default_factory=list)
     goals: list[str] = field(default_factory=list)
     action_items: list[str] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        self.entities = _as_text_list(self.entities)
+        self.decisions = _as_text_list(self.decisions)
+        self.facts = _as_text_list(self.facts)
+        self.goals = _as_text_list(self.goals)
+        self.action_items = _as_text_list(self.action_items)
+
+
+def _as_text_list(value) -> list[str]:
+    """Convert extractor output into a robust list of short strings.
+
+    Real models occasionally return objects inside arrays despite the prompt.
+    Rendering must stay total so one malformed note cannot drop an entire case.
+    """
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value]
+    if not isinstance(value, list):
+        value = [value]
+    out = []
+    for item in value:
+        if item is None:
+            continue
+        if isinstance(item, str):
+            text = item.strip()
+        elif isinstance(item, dict):
+            text = "; ".join(f"{k}: {v}" for k, v in item.items())
+        else:
+            text = str(item)
+        if text:
+            out.append(text)
+    return out
 
 
 class NotesFile:
@@ -363,12 +408,147 @@ class NotesFile:
         return "\n\n".join(lines)
 
 
+# --------------------------------------------------------------------------- #
+# Fact-slot memory (query-addressable, latest-value table)
+# --------------------------------------------------------------------------- #
+
+
+@dataclass
+class SlotFact:
+    timestamp: int
+    segment_id: int
+    subject: str
+    predicate: str
+    value: str
+    evidence: str = ""
+
+    def __post_init__(self) -> None:
+        self.subject = str(self.subject).strip()
+        self.predicate = str(self.predicate).strip()
+        self.value = str(self.value).strip()
+        self.evidence = str(self.evidence).strip()
+
+    @property
+    def key(self) -> str:
+        return _slot_key(self.subject, self.predicate)
+
+
+def _slot_key(subject: str, predicate: str) -> str:
+    text = f"{subject}::{predicate}".lower()
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _slot_tokens(text: str) -> set[str]:
+    return set(re.findall(r"[a-z0-9]+", text.lower()))
+
+
+def parse_slot_facts(text: str, timestamp: int = 0, segment_id: int = 0) -> list[SlotFact]:
+    """Parse the synthetic fact grammar into latest-value slots.
+
+    This is intentionally narrow: it is a deterministic baseline for the
+    released synthetic suite, not a general information extractor. Live runs can
+    populate the same slot schema with an LLM extractor.
+    """
+    patterns = [
+        ("budget", r"approved budget for (?P<subject>.+?) (?:is|has been updated to) \$?(?P<value>[0-9,]+)"),
+        ("deadline", r"hard deadline for (?P<subject>.+?) (?:is|has been updated to) (?P<value>[A-Za-z]+\s+\d+)"),
+        ("owner", r"owner of (?P<subject>.+?) (?:is|has been updated to) (?P<value>[A-Za-z]+)"),
+        ("target metric", r"target metric for (?P<subject>.+?) (?:is|has been updated to) (?P<value>\d+) percent"),
+        ("hard constraint", r"hard constraint on (?P<subject>.+?) (?:is that it must|has been updated to that it must) (?P<value>[^.\n]+)"),
+    ]
+    facts: list[SlotFact] = []
+    for predicate, pattern in patterns:
+        for match in re.finditer(pattern, text, flags=re.I):
+            subject = match.group("subject").strip(" .:\n")
+            # Strip role/preamble fragments that can precede the fact sentence.
+            subject = re.sub(r"^.*?(?:for|of|on)\s+", "", subject, flags=re.I)
+            value = match.group("value").strip(" .")
+            evidence = match.group(0).strip()
+            facts.append(SlotFact(timestamp, segment_id, subject, predicate, value, evidence))
+    return facts
+
+
+class SlotMemoryStore:
+    """Latest-value table for durable facts.
+
+    Unlike append-only notes, this store updates one slot per subject/predicate
+    and renders only compact current values. It is therefore designed to test
+    whether the memory representation, not just the extractor model, is the
+    bottleneck in the pilot results.
+    """
+
+    def __init__(self):
+        self.slots: dict[str, SlotFact] = {}
+        self.events: list[SlotFact] = []
+
+    def upsert(self, fact: SlotFact) -> None:
+        if not fact.subject or not fact.predicate or not fact.value:
+            return
+        self.events.append(fact)
+        current = self.slots.get(fact.key)
+        if current is None or fact.timestamp >= current.timestamp:
+            self.slots[fact.key] = fact
+
+    def ingest_text(self, text: str, timestamp: int, segment_id: int) -> None:
+        for fact in parse_slot_facts(text, timestamp, segment_id):
+            self.upsert(fact)
+
+    def ingest_data(self, data: dict, timestamp: int, segment_id: int) -> None:
+        if isinstance(data, list):
+            data = {"facts": data}
+        if not isinstance(data, dict):
+            return
+        for item in data.get("facts", []) or []:
+            if isinstance(item, dict):
+                subject = item.get("subject") or item.get("entity") or item.get("name") or ""
+                predicate = item.get("predicate") or item.get("attribute") or item.get("key") or ""
+                value = item.get("value") or item.get("answer") or item.get("current_value") or ""
+                evidence = item.get("evidence") or item.get("text") or item.get("quote") or ""
+                self.upsert(SlotFact(timestamp, segment_id, subject, predicate, value, evidence))
+            elif isinstance(item, str):
+                for fact in parse_slot_facts(item, timestamp, segment_id):
+                    self.upsert(fact)
+
+    def facts_for_segment(self, segment_id: int) -> list[SlotFact]:
+        return [fact for fact in self.events if fact.segment_id == segment_id]
+
+    def render(self, query: str = "", max_slots: int = 24) -> str:
+        facts = list(self.slots.values())
+        if query:
+            q = _slot_tokens(query)
+            facts.sort(
+                key=lambda f: (
+                    len(q & _slot_tokens(f"{f.subject} {f.predicate} {f.value} {f.evidence}")),
+                    f.timestamp,
+                ),
+                reverse=True,
+            )
+        else:
+            facts.sort(key=lambda f: (f.timestamp, f.subject, f.predicate), reverse=True)
+        if max_slots:
+            facts = facts[:max_slots]
+        lines = [
+            f"- {fact.subject} | {fact.predicate} | {fact.value} (t={fact.timestamp})"
+            for fact in facts
+        ]
+        return "\n".join(lines)
+
+
 EXTRACT_SYSTEM = (
     "You extract structured memory from a conversation segment. "
     "Return ONLY a JSON object with keys: entities (people/orgs/products), "
     "decisions, facts (include any numbers, dates, IDs verbatim), goals, "
     "action_items. Each value is a list of short strings. Be faithful and "
     "concise; do not invent information."
+)
+
+SLOT_EXTRACT_SYSTEM = (
+    "You extract durable fact slots from a conversation segment. Return ONLY "
+    "JSON with key facts, where facts is a list of objects: subject, predicate, "
+    "value, evidence. Use one slot for each stable fact such as budget, owner, "
+    "deadline, metric, constraint, preference, or decision. If a segment corrects "
+    "a fact, emit the corrected current value. Be literal and concise."
 )
 
 SYNTH_SYSTEM_BASE = (
@@ -478,6 +658,28 @@ class Hierarchical(Strategy):
             SYNTH_SYSTEM_BASE
             + "\n\nPersistent notes (oldest first; prefer most recent on conflict):\n"
             + (self.notes.render() or "(none)")
+        )
+        msgs = history[-self.recent_k:] + [{"role": "user", "content": query}]
+        return system, msgs
+
+
+class SlotMemory(Strategy):
+    """Structured latest-value memory: fact slots + recent window."""
+
+    name = "slot_memory"
+
+    def __init__(self, recent_k: int = 6, store: Optional[SlotMemoryStore] = None,
+                 max_slots: int = 24):
+        self.recent_k = recent_k
+        self.store = store if store is not None else SlotMemoryStore()
+        self.max_slots = max_slots
+
+    def build_context(self, history, query):
+        rendered = self.store.render(query=query, max_slots=self.max_slots)
+        system = (
+            SYNTH_SYSTEM_BASE
+            + "\n\nCurrent structured fact slots (latest values only):\n"
+            + (rendered or "(none)")
         )
         msgs = history[-self.recent_k:] + [{"role": "user", "content": query}]
         return system, msgs

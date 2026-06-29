@@ -43,8 +43,8 @@ import time
 from datasets import build_suite, Case
 from hierarchical_memory import (
     LLMClient, OpenAICompatClient, MockLLMClient, NotesFile, Note,
-    FullContext, Truncation, RunningSummary, Hierarchical,
-    EXTRACT_SYSTEM, _safe_json,
+    FullContext, Truncation, RunningSummary, Hierarchical, SlotMemory, SlotMemoryStore,
+    EXTRACT_SYSTEM, SLOT_EXTRACT_SYSTEM, _safe_json,
 )
 from token_utils import (
     cost_usd, price_for, reduction_pct, fraction_of_baseline_pct,
@@ -131,6 +131,26 @@ def build_notes(client, case: Case, extract_model: str):
     return notes, ex_in, ex_out, lat
 
 
+def build_slot_memory(client, case: Case, extract_model: str):
+    """Fact-slot pass: latest-value table keyed by subject/predicate."""
+    store = SlotMemoryStore()
+    ex_in = ex_out = 0
+    lat = []
+    for seg_id, seg in segment_messages(case.messages, SEGMENT_SIZE):
+        convo = "\n".join(f'{m["role"]}: {m["content"]}' for m in seg)
+        c = client.complete(extract_model, SLOT_EXTRACT_SYSTEM,
+                            [{"role": "user", "content": convo}], max_tokens=512)
+        data = _safe_json(c.text)
+        before = len(store.events)
+        store.ingest_data(data, timestamp=seg_id, segment_id=seg_id)
+        if len(store.events) == before:
+            # Deterministic fallback for the released synthetic grammar; useful
+            # when an extractor emits strings or malformed JSON.
+            store.ingest_text(convo, timestamp=seg_id, segment_id=seg_id)
+        ex_in += c.input_tokens; ex_out += c.output_tokens; lat.append(c.latency_s)
+    return store, ex_in, ex_out, lat
+
+
 def build_summary(client, case: Case, synth_model: str):
     """Running-summary baseline: a single faithful summary over the whole history
     (one call -- conserves rate-limited calls). Returns (summary, in, out)."""
@@ -152,7 +172,8 @@ def compacted_notes_copy(notes: NotesFile, max_notes: int) -> NotesFile:
     return out
 
 
-def token_curve(case: Case, notes: NotesFile, summary: str, compact_notes: int = 0):
+def token_curve(case: Case, notes: NotesFile, summary: str, compact_notes: int = 0,
+                slot_store: SlotMemoryStore | None = None):
     """Cumulative large-model INPUT tokens per strategy (local tiktoken).
 
     Notes/summary become progressively available as segments complete.
@@ -165,7 +186,10 @@ def token_curve(case: Case, notes: NotesFile, summary: str, compact_notes: int =
         "running_summary": RunningSummary(RECENT_K),
         "hierarchical": Hierarchical(RECENT_K),
     }
+    if slot_store is not None:
+        strategies["slot_memory"] = SlotMemory(RECENT_K)
     inc_notes = NotesFile()
+    inc_slots = SlotMemoryStore()
     seg_index = 0
     n_segments = (len(case.messages) + SEGMENT_SIZE - 1) // SEGMENT_SIZE
 
@@ -184,17 +208,25 @@ def token_curve(case: Case, notes: NotesFile, summary: str, compact_notes: int =
             strategies["hierarchical"].notes = inc_notes
             sysh, msgsh = strategies["hierarchical"].build_context(history, q)
             totals["hierarchical"] += count_tokens_local(assemble_text(sysh, msgsh))
+            if slot_store is not None:
+                strategies["slot_memory"].store = inc_slots
+                sysslot, msgsslot = strategies["slot_memory"].build_context(history, q)
+                totals["slot_memory"] += count_tokens_local(assemble_text(sysslot, msgsslot))
         history.append(m)
         while seg_index < n_segments and (turn_i + 1) >= (seg_index + 1) * SEGMENT_SIZE:
             if seg_index < len(notes.notes):
                 inc_notes.notes.append(notes.notes[seg_index])
                 if compact_notes:
                     inc_notes.compact(max_notes=compact_notes)
+            if slot_store is not None:
+                for fact in slot_store.facts_for_segment(seg_index):
+                    inc_slots.upsert(fact)
             seg_index += 1
     return totals
 
 
-def run_qa(client, case: Case, synth_model: str, notes: NotesFile, summary: str):
+def run_qa(client, case: Case, synth_model: str, notes: NotesFile, summary: str,
+           slot_store: SlotMemoryStore | None = None):
     """Answer each planted question under each strategy with the real synth model."""
     strategies = {
         "full_context": FullContext(),
@@ -202,6 +234,8 @@ def run_qa(client, case: Case, synth_model: str, notes: NotesFile, summary: str)
         "running_summary": RunningSummary(RECENT_K),
         "hierarchical": Hierarchical(RECENT_K),
     }
+    if slot_store is not None:
+        strategies["slot_memory"] = SlotMemory(RECENT_K, slot_store)
     strategies["running_summary"].summary = summary
     strategies["hierarchical"].notes = notes
     out = {k: {"correct": 0, "total": 0, "upd_correct": 0, "upd_total": 0,
@@ -264,6 +298,8 @@ def main():
                     help="also build notes with the synth model (expensive extractor) and compare retention")
     ap.add_argument("--compact-notes", type=int, default=0,
                     help="compact hierarchical notes to at most this many entries after each segment")
+    ap.add_argument("--slot-memory", action="store_true",
+                    help="also evaluate a latest-value fact-slot memory strategy")
     ap.add_argument("--out", default="results.json")
     ap.add_argument("--seed", type=int, default=7)
     args = ap.parse_args()
@@ -304,9 +340,12 @@ def main():
         suite = suite[: args.max_cases]
 
     strat_names = ["full_context", "truncation", "running_summary", "hierarchical"]
+    if args.slot_memory:
+        strat_names.append("slot_memory")
     acc = {s: {"tok_red_real": [], "tok_red_cum": [], "cost_pct": [],
                "retention": [], "upd_retention": [], "synth_lat": []} for s in strat_names}
     ablation = {"cheap": [], "expensive": []}
+    case_rows = []
     extract_cost_actual = extract_cost_cascade = summary_cost = 0.0
     ex_lat_all, hier_lat, full_lat = [], [], []
 
@@ -325,7 +364,7 @@ def main():
                 "synth_model": args.synth_model, "extract_model_called": args.extract_model,
                 "extract_price_tier": args.price_extract,
                 "recent_k": RECENT_K, "truncate_k": TRUNCATE_K, "segment_size": SEGMENT_SIZE,
-                "compact_notes": args.compact_notes,
+                "compact_notes": args.compact_notes, "slot_memory": args.slot_memory,
                 "token_counter": "tiktoken/cl100k (cumulative); provider usage (per-query real)",
                 "seed": args.seed, "elapsed_s": round(time.time() - t0, 1),
             },
@@ -348,6 +387,7 @@ def main():
                 "overhead_mean": round((statistics.fmean(hier_lat) if hier_lat else 0)
                                        - (statistics.fmean(full_lat) if full_lat else 0), 3),
             },
+            "case_metrics": case_rows,
         }
         if ablation["cheap"]:
             res["ablation_cheap_vs_expensive_extractor"] = {
@@ -361,41 +401,84 @@ def main():
               f"{len(case.facts)} facts)  t={time.time()-t0:.0f}s", file=sys.stderr)
         try:
             raw_notes, ex_in, ex_out, exlat = build_notes(client, case, args.extract_model)
+            slot_store = None
+            slot_ex_in = slot_ex_out = 0
+            slot_exlat = []
+            if args.slot_memory:
+                slot_store, slot_ex_in, slot_ex_out, slot_exlat = build_slot_memory(
+                    client, case, args.extract_model)
             notes = compacted_notes_copy(raw_notes, args.compact_notes) if args.compact_notes else raw_notes
             summary, sm_in, sm_out = build_summary(client, case, args.synth_model)
-            curve = token_curve(case, raw_notes, summary, compact_notes=args.compact_notes)
-            qa = run_qa(client, case, args.synth_model, notes, summary)
+            curve = token_curve(case, raw_notes, summary, compact_notes=args.compact_notes,
+                                slot_store=slot_store)
+            qa = run_qa(client, case, args.synth_model, notes, summary, slot_store=slot_store)
         except Exception as e:
             print(f"  !! case {case.id} failed ({type(e).__name__}: {str(e)[:80]}); skipping",
                   file=sys.stderr)
             continue
 
         ex_lat_all += exlat
+        ex_lat_all += slot_exlat
         extract_cost_cascade += cost_usd(args.price_extract, ex_in, ex_out)
         extract_cost_actual += cost_usd(args.extract_model, ex_in, ex_out)
+        extract_cost_cascade += cost_usd(args.price_extract, slot_ex_in, slot_ex_out)
+        extract_cost_actual += cost_usd(args.extract_model, slot_ex_in, slot_ex_out)
         summary_cost += cost_usd(args.synth_model, sm_in, sm_out)
 
         base_cum = curve["full_context"]
         base_real = qa["full_context"]["in"]
         base_cost = base_cum * opus_in / 1000.0
+        case_row = {
+            "case_id": case.id,
+            "domain": case.domain,
+            "length_class": case.length_class,
+            "n_messages": len(case.messages),
+            "n_facts": len(case.facts),
+            "n_updated_facts": sum(1 for fact in case.facts if fact.updated),
+            "strategies": {},
+        }
 
         for s in strat_names:
             # cost (% of baseline): synth token flow (cum, tiktoken) x price + maintenance
             maint = 0.0
             if s == "hierarchical":
                 maint = (ex_in * px_in + ex_out * px_out) / 1000.0
+            elif s == "slot_memory":
+                maint = (slot_ex_in * px_in + slot_ex_out * px_out) / 1000.0
             elif s == "running_summary":
                 maint = (sm_in * opus_in + sm_out * opus_out) / 1000.0
             cost_s = curve[s] * opus_in / 1000.0 + maint
-            acc[s]["cost_pct"].append(fraction_of_baseline_pct(base_cost, cost_s))
-            acc[s]["tok_red_cum"].append(reduction_pct(base_cum, curve[s]))
-            acc[s]["tok_red_real"].append(reduction_pct(base_real, qa[s]["in"]))
-            acc[s]["retention"].append(
-                qa[s]["correct"] / qa[s]["total"] * 100 if qa[s]["total"] else 0.0)
+            cost_pct = fraction_of_baseline_pct(base_cost, cost_s)
+            tok_red_cum = reduction_pct(base_cum, curve[s])
+            tok_red_real = reduction_pct(base_real, qa[s]["in"])
+            retention = qa[s]["correct"] / qa[s]["total"] * 100 if qa[s]["total"] else 0.0
+            upd_retention = (
+                qa[s]["upd_correct"] / qa[s]["upd_total"] * 100 if qa[s]["upd_total"] else None
+            )
+            mean_lat = statistics.fmean(qa[s]["lat"]) if qa[s]["lat"] else None
+            acc[s]["cost_pct"].append(cost_pct)
+            acc[s]["tok_red_cum"].append(tok_red_cum)
+            acc[s]["tok_red_real"].append(tok_red_real)
+            acc[s]["retention"].append(retention)
             if qa[s]["upd_total"]:
-                acc[s]["upd_retention"].append(qa[s]["upd_correct"] / qa[s]["upd_total"] * 100)
+                acc[s]["upd_retention"].append(upd_retention)
             if qa[s]["lat"]:
-                acc[s]["synth_lat"].append(statistics.fmean(qa[s]["lat"]))
+                acc[s]["synth_lat"].append(mean_lat)
+            case_row["strategies"][s] = {
+                "token_reduction_real_pct": round(tok_red_real, 6),
+                "token_reduction_cumulative_pct": round(tok_red_cum, 6),
+                "cost_pct_of_baseline": round(cost_pct, 6),
+                "retention_pct": round(retention, 6),
+                "fact_update_retention_pct": round(upd_retention, 6) if upd_retention is not None else None,
+                "correct": qa[s]["correct"],
+                "total": qa[s]["total"],
+                "updated_correct": qa[s]["upd_correct"],
+                "updated_total": qa[s]["upd_total"],
+                "real_input_tokens": qa[s]["in"],
+                "cumulative_input_tokens": curve[s],
+                "cost_usd": round(cost_s, 8),
+                "latency_s": round(mean_lat, 6) if mean_lat is not None else None,
+            }
 
         if qa["hierarchical"]["lat"]:
             hier_lat.append(statistics.fmean(qa["hierarchical"]["lat"]))
@@ -409,14 +492,17 @@ def main():
                 notes_x = (compacted_notes_copy(raw_notes_x, args.compact_notes)
                            if args.compact_notes else raw_notes_x)
                 qa_x = run_qa(client, case, args.synth_model, notes_x, summary)
-                ablation["expensive"].append(
+                expensive_retention = (
                     qa_x["hierarchical"]["correct"] / qa_x["hierarchical"]["total"] * 100
                     if qa_x["hierarchical"]["total"] else 0.0)
+                ablation["expensive"].append(expensive_retention)
+                case_row["ablation_expensive_extractor_retention_pct"] = round(expensive_retention, 6)
             except Exception as e:
                 ablation["cheap"].pop()  # keep cheap/expensive aligned
                 print(f"  !! ablation for {case.id} failed ({type(e).__name__}); skipping",
                       file=sys.stderr)
 
+        case_rows.append(case_row)
         done_cases += 1
         # Incremental save so a later failure never wipes completed work.
         with open(args.out, "w", encoding="utf-8") as f:

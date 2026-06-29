@@ -1,0 +1,264 @@
+{
+  "config": {
+    "offline": false,
+    "provider": "groq",
+    "scale": "paper",
+    "n_cases_requested": 20,
+    "n_cases_completed": 7,
+    "synth_model": "llama-3.3-70b-versatile",
+    "extract_model_called": "llama-3.1-8b-instant",
+    "extract_price_tier": "llama-3.1-8b-instant",
+    "recent_k": 6,
+    "truncate_k": 10,
+    "segment_size": 6,
+    "compact_notes": 0,
+    "token_counter": "tiktoken/cl100k (cumulative); provider usage (per-query real)",
+    "seed": 7,
+    "elapsed_s": 186.0
+  },
+  "strategies": {
+    "full_context": {
+      "token_reduction_real_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 7
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 7
+      },
+      "cost_pct_of_baseline": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 7
+      },
+      "retention_pct": {
+        "mean": 95.24,
+        "std": 11.66,
+        "ci95": [
+          85.71,
+          100.0
+        ],
+        "n": 7
+      },
+      "fact_update_retention_pct": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 7
+      }
+    },
+    "truncation": {
+      "token_reduction_real_pct": {
+        "mean": 23.99,
+        "std": 0.76,
+        "ci95": [
+          23.44,
+          24.52
+        ],
+        "n": 7
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 3.73,
+        "std": 0.12,
+        "ci95": [
+          3.64,
+          3.81
+        ],
+        "n": 7
+      },
+      "cost_pct_of_baseline": {
+        "mean": 96.27,
+        "std": 0.12,
+        "ci95": [
+          96.19,
+          96.36
+        ],
+        "n": 7
+      },
+      "retention_pct": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 7
+      },
+      "fact_update_retention_pct": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 7
+      }
+    },
+    "running_summary": {
+      "token_reduction_real_pct": {
+        "mean": -15.62,
+        "std": 9.47,
+        "ci95": [
+          -22.76,
+          -8.58
+        ],
+        "n": 7
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": -62.79,
+        "std": 12.49,
+        "ci95": [
+          -72.21,
+          -53.25
+        ],
+        "n": 7
+      },
+      "cost_pct_of_baseline": {
+        "mean": 218.63,
+        "std": 16.73,
+        "ci95": [
+          205.93,
+          231.33
+        ],
+        "n": 7
+      },
+      "retention_pct": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 7
+      },
+      "fact_update_retention_pct": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 7
+      }
+    },
+    "hierarchical": {
+      "token_reduction_real_pct": {
+        "mean": 1.38,
+        "std": 2.84,
+        "ci95": [
+          -0.66,
+          3.63
+        ],
+        "n": 7
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": -18.75,
+        "std": 4.48,
+        "ci95": [
+          -22.02,
+          -15.25
+        ],
+        "n": 7
+      },
+      "cost_pct_of_baseline": {
+        "mean": 125.66,
+        "std": 4.56,
+        "ci95": [
+          122.13,
+          129.03
+        ],
+        "n": 7
+      },
+      "retention_pct": {
+        "mean": 85.71,
+        "std": 16.5,
+        "ci95": [
+          71.43,
+          95.24
+        ],
+        "n": 7
+      },
+      "fact_update_retention_pct": {
+        "mean": 85.71,
+        "std": 34.99,
+        "ci95": [
+          57.14,
+          100.0
+        ],
+        "n": 7
+      }
+    }
+  },
+  "cost_breakdown_usd": {
+    "extractor_total_cascade_price": 0.000273,
+    "extractor_total_actual_price": 0.000273,
+    "summary_maintenance_total": 0.002199
+  },
+  "latency_s": {
+    "full_response": {
+      "mean": 0.47,
+      "std": 0.72,
+      "ci95": [
+        0.16,
+        1.07
+      ],
+      "n": 7
+    },
+    "hier_response": {
+      "mean": 1.38,
+      "std": 1.02,
+      "ci95": [
+        0.52,
+        1.99
+      ],
+      "n": 7
+    },
+    "extractor_call": {
+      "mean": 0.25,
+      "std": 0.08,
+      "ci95": [
+        0.21,
+        0.28
+      ],
+      "n": 21
+    },
+    "overhead_mean": 0.906
+  },
+  "ablation_cheap_vs_expensive_extractor": {
+    "cheap_retention_pct": {
+      "mean": 85.71,
+      "std": 16.5,
+      "ci95": [
+        71.43,
+        95.24
+      ],
+      "n": 7
+    },
+    "expensive_retention_pct": {
+      "mean": 90.48,
+      "std": 15.06,
+      "ci95": [
+        80.95,
+        100.0
+      ],
+      "n": 7
+    }
+  }
+}
