@@ -10,11 +10,11 @@ fi
 
 .venv/bin/python -m pip install -r requirements.txt >/dev/null
 
-if [[ -z "${GROQ_API_KEY:-}" ]]; then
-  if [[ -f .env ]] && grep -q '^GROQ_API_KEY=' .env; then
-    echo "Using GROQ_API_KEY from .env (key not printed)."
+if [[ -z "${GROQ_API_KEY:-}" && -z "${GROQ_API_KEYS:-}" ]]; then
+  if [[ -f .env ]] && grep -Eq '^GROQ_API_KEYS?=' .env; then
+    echo "Using Groq API key(s) from .env (keys not printed)."
   else
-    echo "GROQ_API_KEY is not set. Add GROQ_API_KEY=... to .env or export it first." >&2
+    echo "Groq API key is not set. Add GROQ_API_KEY=... or GROQ_API_KEYS=key1,key2 to .env, or export it first." >&2
     exit 1
   fi
 fi

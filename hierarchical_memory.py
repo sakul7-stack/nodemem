@@ -127,20 +127,41 @@ class OpenAICompatClient:
     """
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
-                 min_interval_s: float = 0.0, max_retries: int = 1):
+                 min_interval_s: float = 0.0, max_retries: int = 1,
+                 api_keys: Optional[list[str]] = None):
         from openai import OpenAI
 
-        self._client = OpenAI(
-            api_key=api_key or os.environ.get("OPENAI_API_KEY") or os.environ.get("GROQ_API_KEY"),
-            base_url=base_url or os.environ.get("OPENAI_BASE_URL"),
-            max_retries=max_retries,
-        )
+        key_candidates: list[str] = []
+        if api_keys:
+            key_candidates.extend(api_keys)
+        elif api_key:
+            key_candidates.append(api_key)
+        elif os.environ.get("OPENAI_API_KEY"):
+            key_candidates.append(os.environ["OPENAI_API_KEY"])
+        elif os.environ.get("GROQ_API_KEY"):
+            key_candidates.append(os.environ["GROQ_API_KEY"])
+        elif os.environ.get("GROQ_API_KEYS"):
+            key_candidates.extend(os.environ["GROQ_API_KEYS"].split(","))
+
+        key_candidates = [k.strip() for k in key_candidates if k and k.strip()]
+        if not key_candidates:
+            raise ValueError("OpenAI-compatible client requires an API key")
+
+        self._clients = [
+            OpenAI(
+                api_key=key,
+                base_url=base_url or os.environ.get("OPENAI_BASE_URL"),
+                max_retries=max_retries,
+            )
+            for key in key_candidates
+        ]
+        self._client_index = 0
         self._min_interval = min_interval_s
         self._last_call = 0.0
 
     @property
     def raw(self):
-        return self._client
+        return self._clients[self._client_index]
 
     def _throttle(self):
         if self._min_interval <= 0:
@@ -154,11 +175,14 @@ class OpenAICompatClient:
         import openai
 
         oai_msgs = ([{"role": "system", "content": system}] if system else []) + messages
-        for attempt in range(15):
+        max_attempts = max(15, 8 * len(self._clients))
+        for attempt in range(max_attempts):
             self._throttle()
             t0 = time.time()
+            client = self._clients[self._client_index]
+            self._client_index = (self._client_index + 1) % len(self._clients)
             try:
-                resp = self._client.chat.completions.create(
+                resp = client.chat.completions.create(
                     model=model, max_tokens=max_tokens, messages=oai_msgs)
                 break
             except openai.RateLimitError as e:
@@ -168,7 +192,10 @@ class OpenAICompatClient:
                     ra = float(e.response.headers.get("retry-after", "")) if e.response else None
                 except Exception:
                     ra = None
-                time.sleep(min(max(ra or 20.0, 8.0), 65.0))
+                if len(self._clients) > 1 and attempt < len(self._clients) * 2:
+                    time.sleep(1.0)
+                else:
+                    time.sleep(min(max(ra or 20.0, 8.0), 65.0))
             except (openai.InternalServerError, openai.APITimeoutError, openai.APIConnectionError):
                 time.sleep(6)
         else:

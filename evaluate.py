@@ -72,6 +72,20 @@ def load_dotenv_if_present(path: str = ".env") -> None:
                 os.environ[key] = value
 
 
+def env_keys(*names: str) -> list[str]:
+    """Return unique API keys from environment variables without logging them."""
+    keys: list[str] = []
+    seen = set()
+    for name in names:
+        raw = os.environ.get(name, "")
+        for candidate in raw.split(","):
+            key = candidate.strip()
+            if key and key not in seen:
+                seen.add(key)
+                keys.append(key)
+    return keys
+
+
 # --------------------------------------------------------------------------- #
 # Retention judging
 # --------------------------------------------------------------------------- #
@@ -268,13 +282,14 @@ def main():
     if args.offline:
         client = MockLLMClient()
     elif args.provider == "groq":
-        if not os.environ.get("GROQ_API_KEY"):
+        groq_keys = env_keys("GROQ_API_KEY", "GROQ_API_KEYS")
+        if not groq_keys:
             raise SystemExit(
-                "GROQ_API_KEY is required for live Groq experiments. "
-                "Set it in the environment or add GROQ_API_KEY=... to .env."
+                "GROQ_API_KEY or GROQ_API_KEYS is required for live Groq experiments. "
+                "Set GROQ_API_KEY=... or comma-separated GROQ_API_KEYS=... in .env."
             )
         client = OpenAICompatClient(
-            api_key=os.environ.get("GROQ_API_KEY"),
+            api_keys=groq_keys,
             base_url="https://api.groq.com/openai/v1",
             min_interval_s=args.throttle)
     else:
