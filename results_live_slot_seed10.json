@@ -1,0 +1,974 @@
+{
+  "config": {
+    "offline": false,
+    "provider": "groq",
+    "scale": "small",
+    "n_cases_requested": 8,
+    "n_cases_completed": 8,
+    "synth_model": "llama-3.3-70b-versatile",
+    "extract_model_called": "llama-3.1-8b-instant",
+    "extract_price_tier": "llama-3.1-8b-instant",
+    "recent_k": 6,
+    "truncate_k": 10,
+    "segment_size": 6,
+    "compact_notes": 0,
+    "slot_memory": true,
+    "token_counter": "tiktoken/cl100k (cumulative); provider usage (per-query real)",
+    "seed": 10,
+    "elapsed_s": 346.6
+  },
+  "strategies": {
+    "full_context": {
+      "token_reduction_real_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 8
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 8
+      },
+      "cost_pct_of_baseline": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 8
+      },
+      "retention_pct": {
+        "mean": 93.75,
+        "std": 16.54,
+        "ci95": [
+          81.25,
+          100.0
+        ],
+        "n": 8
+      },
+      "fact_update_retention_pct": {
+        "mean": 93.75,
+        "std": 16.54,
+        "ci95": [
+          81.25,
+          100.0
+        ],
+        "n": 8
+      }
+    },
+    "truncation": {
+      "token_reduction_real_pct": {
+        "mean": 50.68,
+        "std": 21.6,
+        "ci95": [
+          35.09,
+          65.75
+        ],
+        "n": 8
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 29.86,
+        "std": 22.37,
+        "ci95": [
+          14.8,
+          44.95
+        ],
+        "n": 8
+      },
+      "cost_pct_of_baseline": {
+        "mean": 70.14,
+        "std": 22.37,
+        "ci95": [
+          55.09,
+          85.21
+        ],
+        "n": 8
+      },
+      "retention_pct": {
+        "mean": 37.5,
+        "std": 48.41,
+        "ci95": [
+          12.5,
+          75.0
+        ],
+        "n": 8
+      },
+      "fact_update_retention_pct": {
+        "mean": 37.5,
+        "std": 48.41,
+        "ci95": [
+          12.5,
+          75.0
+        ],
+        "n": 8
+      }
+    },
+    "running_summary": {
+      "token_reduction_real_pct": {
+        "mean": 19.19,
+        "std": 26.0,
+        "ci95": [
+          1.88,
+          37.13
+        ],
+        "n": 8
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": -30.45,
+        "std": 27.27,
+        "ci95": [
+          -47.94,
+          -10.0
+        ],
+        "n": 8
+      },
+      "cost_pct_of_baseline": {
+        "mean": 161.52,
+        "std": 44.0,
+        "ci95": [
+          130.99,
+          190.2
+        ],
+        "n": 8
+      },
+      "retention_pct": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 8
+      },
+      "fact_update_retention_pct": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 8
+      }
+    },
+    "hierarchical": {
+      "token_reduction_real_pct": {
+        "mean": 19.1,
+        "std": 16.34,
+        "ci95": [
+          7.46,
+          29.98
+        ],
+        "n": 8
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 0.95,
+        "std": 15.3,
+        "ci95": [
+          -9.75,
+          11.39
+        ],
+        "n": 8
+      },
+      "cost_pct_of_baseline": {
+        "mean": 103.42,
+        "std": 17.36,
+        "ci95": [
+          91.63,
+          115.68
+        ],
+        "n": 8
+      },
+      "retention_pct": {
+        "mean": 82.08,
+        "std": 14.97,
+        "ci95": [
+          71.88,
+          92.71
+        ],
+        "n": 8
+      },
+      "fact_update_retention_pct": {
+        "mean": 87.5,
+        "std": 21.65,
+        "ci95": [
+          68.75,
+          100.0
+        ],
+        "n": 8
+      }
+    },
+    "slot_memory": {
+      "token_reduction_real_pct": {
+        "mean": 42.94,
+        "std": 17.5,
+        "ci95": [
+          30.66,
+          54.78
+        ],
+        "n": 8
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 17.32,
+        "std": 19.39,
+        "ci95": [
+          4.0,
+          30.63
+        ],
+        "n": 8
+      },
+      "cost_pct_of_baseline": {
+        "mean": 87.73,
+        "std": 21.62,
+        "ci95": [
+          72.93,
+          102.58
+        ],
+        "n": 8
+      },
+      "retention_pct": {
+        "mean": 87.5,
+        "std": 21.65,
+        "ci95": [
+          68.75,
+          100.0
+        ],
+        "n": 8
+      },
+      "fact_update_retention_pct": {
+        "mean": 87.5,
+        "std": 33.07,
+        "ci95": [
+          62.5,
+          100.0
+        ],
+        "n": 8
+      }
+    }
+  },
+  "cost_breakdown_usd": {
+    "extractor_total_cascade_price": 0.001259,
+    "extractor_total_actual_price": 0.001259,
+    "summary_maintenance_total": 0.003574
+  },
+  "latency_s": {
+    "full_response": {
+      "mean": 0.26,
+      "std": 0.02,
+      "ci95": [
+        0.25,
+        0.27
+      ],
+      "n": 8
+    },
+    "hier_response": {
+      "mean": 0.25,
+      "std": 0.04,
+      "ci95": [
+        0.22,
+        0.27
+      ],
+      "n": 8
+    },
+    "extractor_call": {
+      "mean": 0.28,
+      "std": 0.07,
+      "ci95": [
+        0.26,
+        0.29
+      ],
+      "n": 88
+    },
+    "overhead_mean": -0.013
+  },
+  "case_metrics": [
+    {
+      "case_id": "product_development-short-0",
+      "domain": "product_development",
+      "length_class": "short",
+      "n_messages": 14,
+      "n_facts": 3,
+      "n_updated_facts": 1,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 976,
+          "cumulative_input_tokens": 991,
+          "cost_usd": 0.00058469,
+          "latency_s": 0.237736
+        },
+        "truncation": {
+          "token_reduction_real_pct": 24.282787,
+          "token_reduction_cumulative_pct": 3.430878,
+          "cost_pct_of_baseline": 96.569122,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 739,
+          "cumulative_input_tokens": 957,
+          "cost_usd": 0.00056463,
+          "latency_s": 19.226238
+        },
+        "running_summary": {
+          "token_reduction_real_pct": -9.221311,
+          "token_reduction_cumulative_pct": -54.086781,
+          "cost_pct_of_baseline": 206.962664,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 1066,
+          "cumulative_input_tokens": 1527,
+          "cost_usd": 0.00121009,
+          "latency_s": 0.243356
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": -5.840164,
+          "token_reduction_cumulative_pct": -19.071645,
+          "cost_pct_of_baseline": 126.136927,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 1033,
+          "cumulative_input_tokens": 1180,
+          "cost_usd": 0.00073751,
+          "latency_s": 0.240578
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 21.516393,
+          "token_reduction_cumulative_pct": -3.430878,
+          "cost_pct_of_baseline": 112.045699,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 766,
+          "cumulative_input_tokens": 1025,
+          "cost_usd": 0.00065512,
+          "latency_s": 0.261202
+        }
+      }
+    },
+    {
+      "case_id": "research_planning-short-1",
+      "domain": "research_planning",
+      "length_class": "short",
+      "n_messages": 14,
+      "n_facts": 3,
+      "n_updated_facts": 1,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 950,
+          "cumulative_input_tokens": 960,
+          "cost_usd": 0.0005664,
+          "latency_s": 0.235942
+        },
+        "truncation": {
+          "token_reduction_real_pct": 24.315789,
+          "token_reduction_cumulative_pct": 3.854167,
+          "cost_pct_of_baseline": 96.145833,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 719,
+          "cumulative_input_tokens": 923,
+          "cost_usd": 0.00054457,
+          "latency_s": 0.255622
+        },
+        "running_summary": {
+          "token_reduction_real_pct": -11.684211,
+          "token_reduction_cumulative_pct": -56.979167,
+          "cost_pct_of_baseline": 210.764477,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 1061,
+          "cumulative_input_tokens": 1507,
+          "cost_usd": 0.00119377,
+          "latency_s": 0.152375
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": -2.842105,
+          "token_reduction_cumulative_pct": -17.5,
+          "cost_pct_of_baseline": 124.685734,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 977,
+          "cumulative_input_tokens": 1128,
+          "cost_usd": 0.00070622,
+          "latency_s": 0.283758
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 21.157895,
+          "token_reduction_cumulative_pct": -3.958333,
+          "cost_pct_of_baseline": 111.345339,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 749,
+          "cumulative_input_tokens": 998,
+          "cost_usd": 0.00063066,
+          "latency_s": 0.200965
+        }
+      }
+    },
+    {
+      "case_id": "travel_booking-short-2",
+      "domain": "travel_booking",
+      "length_class": "short",
+      "n_messages": 14,
+      "n_facts": 3,
+      "n_updated_facts": 1,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 914,
+          "cumulative_input_tokens": 915,
+          "cost_usd": 0.00053985,
+          "latency_s": 0.272056
+        },
+        "truncation": {
+          "token_reduction_real_pct": 23.304158,
+          "token_reduction_cumulative_pct": 3.934426,
+          "cost_pct_of_baseline": 96.065574,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 701,
+          "cumulative_input_tokens": 879,
+          "cost_usd": 0.00051861,
+          "latency_s": 0.261745
+        },
+        "running_summary": {
+          "token_reduction_real_pct": -10.83151,
+          "token_reduction_cumulative_pct": -56.284153,
+          "cost_pct_of_baseline": 210.049088,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 1013,
+          "cumulative_input_tokens": 1430,
+          "cost_usd": 0.00113395,
+          "latency_s": 0.366499
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 6.564551,
+          "token_reduction_cumulative_pct": -15.191257,
+          "cost_pct_of_baseline": 121.90238,
+          "retention_pct": 66.666667,
+          "fact_update_retention_pct": 100.0,
+          "correct": 2,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 854,
+          "cumulative_input_tokens": 1054,
+          "cost_usd": 0.00065809,
+          "latency_s": 0.202908
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 22.647702,
+          "token_reduction_cumulative_pct": -8.415301,
+          "cost_pct_of_baseline": 115.885894,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 3,
+          "updated_correct": 1,
+          "updated_total": 1,
+          "real_input_tokens": 707,
+          "cumulative_input_tokens": 992,
+          "cost_usd": 0.00062561,
+          "latency_s": 0.181819
+        }
+      }
+    },
+    {
+      "case_id": "technical_debugging-medium-0",
+      "domain": "technical_debugging",
+      "length_class": "medium",
+      "n_messages": 30,
+      "n_facts": 4,
+      "n_updated_facts": 2,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 4,
+          "total": 4,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 2174,
+          "cumulative_input_tokens": 3455,
+          "cost_usd": 0.00203845,
+          "latency_s": 0.246213
+        },
+        "truncation": {
+          "token_reduction_real_pct": 60.717571,
+          "token_reduction_cumulative_pct": 35.571635,
+          "cost_pct_of_baseline": 64.428365,
+          "retention_pct": 0.0,
+          "fact_update_retention_pct": 0.0,
+          "correct": 0,
+          "total": 4,
+          "updated_correct": 0,
+          "updated_total": 2,
+          "real_input_tokens": 854,
+          "cumulative_input_tokens": 2226,
+          "cost_usd": 0.00131334,
+          "latency_s": 0.280324
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 20.975161,
+          "token_reduction_cumulative_pct": -42.141823,
+          "cost_pct_of_baseline": 165.745542,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 4,
+          "total": 4,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 1718,
+          "cumulative_input_tokens": 4911,
+          "cost_usd": 0.00337864,
+          "latency_s": 0.248539
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 30.358786,
+          "token_reduction_cumulative_pct": 11.86686,
+          "cost_pct_of_baseline": 91.423876,
+          "retention_pct": 75.0,
+          "fact_update_retention_pct": 50.0,
+          "correct": 3,
+          "total": 4,
+          "updated_correct": 1,
+          "updated_total": 2,
+          "real_input_tokens": 1514,
+          "cumulative_input_tokens": 3045,
+          "cost_usd": 0.00186363,
+          "latency_s": 0.208839
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 46.918123,
+          "token_reduction_cumulative_pct": 20.289436,
+          "cost_pct_of_baseline": 83.738134,
+          "retention_pct": 50.0,
+          "fact_update_retention_pct": 0.0,
+          "correct": 2,
+          "total": 4,
+          "updated_correct": 0,
+          "updated_total": 2,
+          "real_input_tokens": 1154,
+          "cumulative_input_tokens": 2754,
+          "cost_usd": 0.00170696,
+          "latency_s": 0.228929
+        }
+      }
+    },
+    {
+      "case_id": "business_strategy-medium-1",
+      "domain": "business_strategy",
+      "length_class": "medium",
+      "n_messages": 30,
+      "n_facts": 4,
+      "n_updated_facts": 2,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 4,
+          "total": 4,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 2159,
+          "cumulative_input_tokens": 3467,
+          "cost_usd": 0.00204553,
+          "latency_s": 0.274024
+        },
+        "truncation": {
+          "token_reduction_real_pct": 60.583604,
+          "token_reduction_cumulative_pct": 36.140756,
+          "cost_pct_of_baseline": 63.859244,
+          "retention_pct": 0.0,
+          "fact_update_retention_pct": 0.0,
+          "correct": 0,
+          "total": 4,
+          "updated_correct": 0,
+          "updated_total": 2,
+          "real_input_tokens": 851,
+          "cumulative_input_tokens": 2214,
+          "cost_usd": 0.00130626,
+          "latency_s": 14.775946
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 29.087541,
+          "token_reduction_cumulative_pct": -25.872512,
+          "cost_pct_of_baseline": 147.541224,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 4,
+          "total": 4,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 1531,
+          "cumulative_input_tokens": 4364,
+          "cost_usd": 0.003018,
+          "latency_s": 0.235056
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 29.272811,
+          "token_reduction_cumulative_pct": 7.787713,
+          "cost_pct_of_baseline": 95.41928,
+          "retention_pct": 75.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 3,
+          "total": 4,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 1527,
+          "cumulative_input_tokens": 3197,
+          "cost_usd": 0.00195183,
+          "latency_s": 0.210027
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 49.652617,
+          "token_reduction_cumulative_pct": 22.324776,
+          "cost_pct_of_baseline": 82.105371,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 4,
+          "total": 4,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 1087,
+          "cumulative_input_tokens": 2693,
+          "cost_usd": 0.00167949,
+          "latency_s": 0.261633
+        }
+      }
+    },
+    {
+      "case_id": "product_development-medium-2",
+      "domain": "product_development",
+      "length_class": "medium",
+      "n_messages": 30,
+      "n_facts": 4,
+      "n_updated_facts": 2,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 50.0,
+          "fact_update_retention_pct": 50.0,
+          "correct": 2,
+          "total": 4,
+          "updated_correct": 1,
+          "updated_total": 2,
+          "real_input_tokens": 2226,
+          "cumulative_input_tokens": 3536,
+          "cost_usd": 0.00208624,
+          "latency_s": 0.258288
+        },
+        "truncation": {
+          "token_reduction_real_pct": 59.65858,
+          "token_reduction_cumulative_pct": 35.378959,
+          "cost_pct_of_baseline": 64.621041,
+          "retention_pct": 0.0,
+          "fact_update_retention_pct": 0.0,
+          "correct": 0,
+          "total": 4,
+          "updated_correct": 0,
+          "updated_total": 2,
+          "real_input_tokens": 898,
+          "cumulative_input_tokens": 2285,
+          "cost_usd": 0.00134815,
+          "latency_s": 13.532988
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 24.438455,
+          "token_reduction_cumulative_pct": -34.983032,
+          "cost_pct_of_baseline": 157.807827,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 4,
+          "total": 4,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 1682,
+          "cumulative_input_tokens": 4773,
+          "cost_usd": 0.00329225,
+          "latency_s": 0.1745
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 21.563342,
+          "token_reduction_cumulative_pct": 0.395928,
+          "cost_pct_of_baseline": 103.057654,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 4,
+          "total": 4,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 1746,
+          "cumulative_input_tokens": 3522,
+          "cost_usd": 0.00215003,
+          "latency_s": 0.304695
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 51.931716,
+          "token_reduction_cumulative_pct": 24.660633,
+          "cost_pct_of_baseline": 79.17162,
+          "retention_pct": 50.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 2,
+          "total": 4,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 1070,
+          "cumulative_input_tokens": 2664,
+          "cost_usd": 0.00165171,
+          "latency_s": 0.188538
+        }
+      }
+    },
+    {
+      "case_id": "research_planning-long-0",
+      "domain": "research_planning",
+      "length_class": "long",
+      "n_messages": 56,
+      "n_facts": 5,
+      "n_updated_facts": 2,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 5,
+          "total": 5,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 4598,
+          "cumulative_input_tokens": 10856,
+          "cost_usd": 0.00640504,
+          "latency_s": 0.264955
+        },
+        "truncation": {
+          "token_reduction_real_pct": 76.337538,
+          "token_reduction_cumulative_pct": 60.390567,
+          "cost_pct_of_baseline": 39.609433,
+          "retention_pct": 0.0,
+          "fact_update_retention_pct": 0.0,
+          "correct": 0,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 2,
+          "real_input_tokens": 1088,
+          "cumulative_input_tokens": 4300,
+          "cost_usd": 0.002537,
+          "latency_s": 0.233959
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 54.915181,
+          "token_reduction_cumulative_pct": 12.785556,
+          "cost_pct_of_baseline": 97.252632,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 5,
+          "total": 5,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 2073,
+          "cumulative_input_tokens": 9468,
+          "cost_usd": 0.00622907,
+          "latency_s": 0.257793
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 38.603741,
+          "token_reduction_cumulative_pct": 21.223287,
+          "cost_pct_of_baseline": 80.775452,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 2823,
+          "cumulative_input_tokens": 8552,
+          "cost_usd": 0.0051737,
+          "latency_s": 0.285919
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 66.115702,
+          "token_reduction_cumulative_pct": 43.690125,
+          "cost_pct_of_baseline": 58.320479,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 5,
+          "total": 5,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 1558,
+          "cumulative_input_tokens": 6113,
+          "cost_usd": 0.00373545,
+          "latency_s": 0.198076
+        }
+      }
+    },
+    {
+      "case_id": "travel_booking-long-1",
+      "domain": "travel_booking",
+      "length_class": "long",
+      "n_messages": 56,
+      "n_facts": 5,
+      "n_updated_facts": 2,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 5,
+          "total": 5,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 4524,
+          "cumulative_input_tokens": 10627,
+          "cost_usd": 0.00626993,
+          "latency_s": 0.297569
+        },
+        "truncation": {
+          "token_reduction_real_pct": 76.259947,
+          "token_reduction_cumulative_pct": 60.214548,
+          "cost_pct_of_baseline": 39.785452,
+          "retention_pct": 0.0,
+          "fact_update_retention_pct": 0.0,
+          "correct": 0,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 2,
+          "real_input_tokens": 1074,
+          "cumulative_input_tokens": 4228,
+          "cost_usd": 0.00249452,
+          "latency_s": 0.237549
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 55.813439,
+          "token_reduction_cumulative_pct": 13.9362,
+          "cost_pct_of_baseline": 96.047962,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 5,
+          "total": 5,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 1999,
+          "cumulative_input_tokens": 9146,
+          "cost_usd": 0.00602214,
+          "latency_s": 0.260314
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 35.145889,
+          "token_reduction_cumulative_pct": 18.114237,
+          "cost_pct_of_baseline": 83.944478,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": 50.0,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 1,
+          "updated_total": 2,
+          "real_input_tokens": 2934,
+          "cumulative_input_tokens": 8702,
+          "cost_usd": 0.00526326,
+          "latency_s": 0.248146
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 63.549956,
+          "token_reduction_cumulative_pct": 43.38948,
+          "cost_pct_of_baseline": 59.244043,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": 100.0,
+          "correct": 5,
+          "total": 5,
+          "updated_correct": 2,
+          "updated_total": 2,
+          "real_input_tokens": 1649,
+          "cumulative_input_tokens": 6016,
+          "cost_usd": 0.00371456,
+          "latency_s": 0.216689
+        }
+      }
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 Outputs are deterministic and safe to run without API keys:
 
-* measured-result figures from ``results_live.json``;
+* measured-result figures from the latest live Groq result JSON;
 * an architecture flowchart;
 * a long-horizon token/cost simulation using local token counts and the seeded
   synthetic suite.
@@ -40,7 +40,7 @@ from token_utils import assemble_text, count_tokens_local, fraction_of_baseline_
 
 
 ROOT = Path(__file__).resolve().parent
-DEFAULT_RESULTS = ROOT / "results_live.json"
+DEFAULT_RESULTS = ROOT / "results_live_aggregate.json"
 DEFAULT_FIG_DIR = ROOT / "figures"
 DEFAULT_GROWTH_OUT = ROOT / "results_growth_simulation.json"
 
@@ -56,7 +56,21 @@ STRATEGIES = [
     ("truncation", "Truncation"),
     ("running_summary", "Running summary"),
     ("hierarchical", "Hierarchical"),
+    ("slot_memory", "Fact slots"),
 ]
+
+COLORS = {
+    "full_context": "#4c78a8",
+    "truncation": "#f58518",
+    "running_summary": "#54a24b",
+    "hierarchical": "#b279a2",
+    "slot_memory": "#e45756",
+}
+
+
+def available_strategies(results: dict) -> list[tuple[str, str]]:
+    strategies = results.get("strategies", {})
+    return [(key, label) for key, label in STRATEGIES if key in strategies]
 
 
 def save_figure(fig, out_dir: Path, stem: str) -> None:
@@ -80,11 +94,12 @@ def plot_measured_bars(results: dict, out_dir: Path) -> None:
         ("retention_pct", "Retention (%)"),
         ("cost_pct_of_baseline", "Cost (% of full)"),
     ]
-    colors = ["#4c78a8", "#f58518", "#54a24b", "#b279a2"]
+    strategies = available_strategies(results)
+    colors = [COLORS[key] for key, _ in strategies]
     fig, axes = plt.subplots(1, 3, figsize=(12.5, 3.4))
-    labels = [label for _, label in STRATEGIES]
+    labels = [label for _, label in strategies]
     for ax, (metric, title) in zip(axes, metrics):
-        means = [stat(results, key, metric)[0] for key, _ in STRATEGIES]
+        means = [stat(results, key, metric)[0] for key, _ in strategies]
         ax.bar(range(len(labels)), means, color=colors, edgecolor="black", linewidth=0.5)
         if metric == "cost_pct_of_baseline":
             ax.axhline(100, color="#444444", linestyle="--", linewidth=1, label="Full-context cost")
@@ -92,19 +107,14 @@ def plot_measured_bars(results: dict, out_dir: Path) -> None:
         ax.set_xticks(range(len(labels)))
         ax.set_xticklabels(labels, rotation=30, ha="right")
         ax.grid(axis="y", alpha=0.25)
-    fig.suptitle("Measured Groq small-scale evaluation (n = 7)", y=1.05, fontsize=12)
+    n = results.get("config", {}).get("n_cases_completed", "?")
+    fig.suptitle(f"Measured Groq small-scale evaluation (n = {n})", y=1.05, fontsize=12)
     save_figure(fig, out_dir, "measured_results_bars")
 
 
 def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
     fig, ax = plt.subplots(figsize=(6.4, 4.4))
-    colors = {
-        "full_context": "#4c78a8",
-        "truncation": "#f58518",
-        "running_summary": "#54a24b",
-        "hierarchical": "#b279a2",
-    }
-    for key, label in STRATEGIES:
+    for key, label in available_strategies(results):
         cost, cost_lo, cost_hi = stat(results, key, "cost_pct_of_baseline")
         retention, ret_lo, ret_hi = stat(results, key, "retention_pct")
         ax.errorbar(
@@ -113,7 +123,7 @@ def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
             xerr=[[cost - cost_lo], [cost_hi - cost]],
             yerr=[[retention - ret_lo], [ret_hi - retention]],
             fmt="o",
-            color=colors[key],
+            color=COLORS[key],
             capsize=4,
             markersize=7,
             label=label,
@@ -123,7 +133,7 @@ def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
     ax.axhline(90, color="#777777", linestyle=":", linewidth=1)
     ax.set_xlabel("Cost (% of full-context baseline)")
     ax.set_ylabel("Retention (%)")
-    ax.set_title("Retention/cost frontier with 95% bootstrap CIs")
+    ax.set_title("Retention/cost frontier with 95% CIs")
     ax.set_xlim(55, 190)
     ax.set_ylim(0, 108)
     ax.grid(alpha=0.25)
@@ -177,7 +187,7 @@ def plot_architecture(out_dir: Path) -> None:
     boxes = {
         "segment": draw_box(ax, (0.2, 2.25), "Conversation\nsegment", color="#e8f1fb"),
         "extractor": draw_box(ax, (3.0, 2.25), "Cheap extractor\n$\\phi_{small}$", color="#e8f7ee"),
-        "notes": draw_box(ax, (5.8, 2.25), "Persistent notes\n(JSON ledger)", color="#fff4df"),
+        "notes": draw_box(ax, (5.8, 2.25), "Persistent memory\n(notes or slots)", color="#fff4df"),
         "recent": draw_box(ax, (3.0, 0.9), "Recent window\n(last $k$ messages)", color="#f4e8fb"),
         "synth": draw_box(ax, (5.8, 0.9), "Large synthesizer\n$\\phi_{large}$", color="#fdebea"),
         "answer": draw_box(ax, (8.3, 0.9), "Answer", width=1.4, color="#eeeeee"),
