@@ -23,3 +23,8 @@ notes_*.json
 *.toc
 *.synctex.gz
 # note: main.pdf is intentionally NOT ignored so collaborators can read the build
+
+# --- binaries / redundant bundles ---
+.tools/
+overleaf/overleaf/
+overleaf/overleaf_bundle.zip

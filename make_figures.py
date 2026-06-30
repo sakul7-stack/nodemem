@@ -45,7 +45,7 @@ from token_utils import assemble_text, count_tokens_local, fraction_of_baseline_
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_RESULTS = ROOT / "results_live_slot_aggregate.json"
-DEFAULT_FIG_DIR = ROOT / "figures"
+DEFAULT_FIG_DIR = ROOT / "overleaf" / "figures"
 DEFAULT_GROWTH_OUT = ROOT / "results_growth_simulation.json"
 
 RECENT_K = 6
@@ -176,7 +176,7 @@ def draw_box(ax, xy: tuple[float, float], text: str, width: float = 2.2, height:
         facecolor=color,
     )
     ax.add_patch(box)
-    ax.text(x + width / 2, y + height / 2, text, ha="center", va="center", fontsize=9)
+    ax.text(x + width / 2, y + height / 2, text, ha="center", va="center", fontsize=11)
     return box
 
 
@@ -201,8 +201,8 @@ def plot_architecture(out_dir: Path) -> None:
     draw_arrow(ax, (6.9, 2.25), (6.9, 1.62))
     draw_arrow(ax, (5.2, 1.26), (5.8, 1.26))
     draw_arrow(ax, (8.0, 1.26), (8.3, 1.26))
-    ax.text(0.3, 3.35, "Write path: extract slots once per segment, overwrite by key", fontsize=9, weight="bold")
-    ax.text(3.0, 0.35, "Read path: latest-value slots + recent messages replace full-history prompts", fontsize=9, weight="bold")
+    ax.text(0.3, 3.35, "Write path: extract slots once per segment, overwrite by key", fontsize=11, weight="bold")
+    ax.text(3.0, 0.35, "Read path: latest-value slots + recent messages replace full-history prompts", fontsize=11, weight="bold")
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 3.8)
     save_figure(fig, out_dir, "architecture_flowchart")

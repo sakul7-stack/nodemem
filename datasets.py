@@ -183,6 +183,8 @@ def build_suite(seed: int = 7, scale: str = "small") -> list[Case]:
     scale='small' -> 8 cases (cheap, for a real-API run).
     scale='paper' -> 20 cases matching the paper's stated counts.
     scale='long' -> 12 stress cases with >100 messages for token-growth curves.
+    scale='sweep' -> 30 cases, 5 length classes (14→200 msgs, n=6 each).
+    scale='sweep_big' -> 60 cases, 5 length classes (n=12 each).
     """
     rng = random.Random(seed)
     cases: list[Case] = []
@@ -191,6 +193,12 @@ def build_suite(seed: int = 7, scale: str = "small") -> list[Case]:
         plan = [("short", 7, 14, 3, 1), ("medium", 7, 32, 4, 2), ("long", 6, 60, 5, 2)]
     elif scale == "long":
         plan = [("long120", 4, 120, 5, 2), ("long240", 4, 240, 5, 2), ("long480", 4, 480, 5, 2)]
+    elif scale == "sweep":
+        plan = [("short", 6, 14, 3, 1), ("medium", 6, 32, 4, 2),
+                ("long", 6, 60, 5, 2), ("xlong", 6, 120, 5, 2), ("xxlong", 6, 200, 5, 2)]
+    elif scale == "sweep_big":
+        plan = [("short", 12, 14, 3, 1), ("medium", 12, 32, 4, 2),
+                ("long", 12, 60, 5, 2), ("xlong", 12, 120, 5, 2), ("xxlong", 12, 200, 5, 2)]
     elif scale == "tiny":
         plan = [("short", 2, 14, 3, 1), ("medium", 2, 30, 4, 2), ("long", 2, 56, 5, 2)]
     else:  # small

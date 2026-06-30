@@ -285,7 +285,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--offline", action="store_true")
     ap.add_argument("--provider", choices=["anthropic", "groq"], default="anthropic")
-    ap.add_argument("--scale", choices=["tiny", "small", "paper", "long"], default="tiny")
+    ap.add_argument("--scale", choices=["tiny", "small", "paper", "long", "sweep", "sweep_big"], default="tiny")
     ap.add_argument("--max-cases", type=int, default=0)
     ap.add_argument("--synth-model", default=None)
     ap.add_argument("--extract-model", default=None,
@@ -302,6 +302,8 @@ def main():
                     help="also evaluate a latest-value fact-slot memory strategy")
     ap.add_argument("--out", default="results.json")
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--resume", action="store_true",
+                    help="resume from existing --out file, skip completed cases")
     args = ap.parse_args()
     load_dotenv_if_present()
 
@@ -339,6 +341,20 @@ def main():
     if args.max_cases:
         suite = suite[: args.max_cases]
 
+    # Resume: skip cases already completed in existing output file.
+    resume_ids: set[str] = set()
+    if args.resume and os.path.exists(args.out):
+        try:
+            with open(args.out, "r", encoding="utf-8") as f:
+                prev = json.load(f)
+            for row in prev.get("case_metrics", []):
+                resume_ids.add(row["case_id"])
+            print(f"Resume mode: {len(resume_ids)} cases already completed, skipping them.",
+                  file=sys.stderr)
+        except Exception as e:
+            print(f"Could not resume from {args.out}: {e}; starting fresh.",
+                  file=sys.stderr)
+
     strat_names = ["full_context", "truncation", "running_summary", "hierarchical"]
     if args.slot_memory:
         strat_names.append("slot_memory")
@@ -355,6 +371,31 @@ def main():
 
     t0 = time.time()
     done_cases = 0
+
+    # Pre-populate accumulators from resumed data.
+    if resume_ids:
+        try:
+            with open(args.out, "r", encoding="utf-8") as f:
+                prev = json.load(f)
+            for row in prev.get("case_metrics", []):
+                if row["case_id"] not in resume_ids:
+                    continue
+                case_rows.append(row)
+                for s in strat_names:
+                    if s not in row.get("strategies", {}):
+                        continue
+                    st = row["strategies"][s]
+                    acc[s]["tok_red_real"].append(st.get("token_reduction_real_pct", 0))
+                    acc[s]["tok_red_cum"].append(st.get("token_reduction_cumulative_pct", 0))
+                    acc[s]["cost_pct"].append(st.get("cost_pct_of_baseline", 0))
+                    acc[s]["retention"].append(st.get("retention_pct", 0))
+                    if st.get("fact_update_retention_pct") is not None:
+                        acc[s]["upd_retention"].append(st["fact_update_retention_pct"])
+                done_cases += 1
+            print(f"Pre-populated {done_cases} cases from {args.out}.", file=sys.stderr)
+        except Exception as e:
+            print(f"Could not pre-populate from {args.out}: {e}", file=sys.stderr)
+            resume_ids.clear()
 
     def build_results():
         res = {
@@ -397,6 +438,10 @@ def main():
         return res
 
     for ci, case in enumerate(suite):
+        if case.id in resume_ids:
+            print(f"[{ci+1}/{len(suite)}] {case.id} already completed, skipping.",
+                  file=sys.stderr)
+            continue
         print(f"[{ci+1}/{len(suite)}] {case.id} ({len(case.messages)} msgs, "
               f"{len(case.facts)} facts)  t={time.time()-t0:.0f}s", file=sys.stderr)
         try:
