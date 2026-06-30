@@ -44,7 +44,7 @@ from token_utils import assemble_text, count_tokens_local, fraction_of_baseline_
 
 
 ROOT = Path(__file__).resolve().parent
-DEFAULT_RESULTS = ROOT / "results_live_slot_aggregate.json"
+DEFAULT_RESULTS = ROOT / "results_sweep.json"
 DEFAULT_FIG_DIR = ROOT / "overleaf" / "figures"
 DEFAULT_GROWTH_OUT = ROOT / "results_growth_simulation.json"
 
@@ -100,19 +100,21 @@ def plot_measured_bars(results: dict, out_dir: Path) -> None:
     ]
     strategies = available_strategies(results)
     colors = [COLORS[key] for key, _ in strategies]
-    fig, axes = plt.subplots(1, 3, figsize=(12.5, 3.4))
+    fig, axes = plt.subplots(1, 3, figsize=(14.0, 3.8))
     labels = [label for _, label in strategies]
     for ax, (metric, title) in zip(axes, metrics):
         means = [stat(results, key, metric)[0] for key, _ in strategies]
         ax.bar(range(len(labels)), means, color=colors, edgecolor="black", linewidth=0.5)
         if metric == "cost_pct_of_baseline":
             ax.axhline(100, color="#444444", linestyle="--", linewidth=1, label="Full-context cost")
-        ax.set_title(title)
+        ax.set_title(title, fontsize=10)
         ax.set_xticks(range(len(labels)))
-        ax.set_xticklabels(labels, rotation=30, ha="right")
+        ax.set_xticklabels(labels, rotation=25, ha="right", fontsize=9)
+        ax.set_ylabel("%", fontsize=9)
         ax.grid(axis="y", alpha=0.25)
     n = results.get("config", {}).get("n_cases_completed", "?")
-    fig.suptitle(f"Measured Groq small-scale evaluation (n = {n})", y=1.05, fontsize=12)
+    fig.suptitle(f"Measured Groq sweep evaluation (n = {n}, 14\u2013200 messages)", y=1.02, fontsize=11)
+    fig.subplots_adjust(bottom=0.22, wspace=0.35)
     save_figure(fig, out_dir, "measured_results_bars")
 
 
@@ -138,7 +140,7 @@ def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
     ax.set_xlabel("Cost (% of full-context baseline)")
     ax.set_ylabel("Retention (%)")
     ax.set_title("Retention/cost frontier with 95% CIs")
-    ax.set_xlim(55, 190)
+    ax.set_xlim(30, 230)
     ax.set_ylim(0, 108)
     ax.grid(alpha=0.25)
     save_figure(fig, out_dir, "retention_cost_frontier")
