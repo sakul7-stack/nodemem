@@ -20,6 +20,14 @@ data/locomo10.json
 data/longmemeval_*.json
 data/
 
+
+# --- stale or transient results ---
+results_*.json
+# --- stale or transient results ---
+results_*.json
+!results_nara_*.json
+!results_growth_simulation.json
+
 # --- LaTeX build artifacts ---
 *.aux
 *.bbl
