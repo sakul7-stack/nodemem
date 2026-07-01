@@ -15,6 +15,11 @@ __pycache__/
 *.output
 notes_*.json
 
+# --- downloaded benchmarks (fetched at eval time, not redistributed) ---
+data/locomo10.json
+data/longmemeval_*.json
+data/
+
 # --- LaTeX build artifacts ---
 *.aux
 *.bbl

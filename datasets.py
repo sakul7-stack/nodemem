@@ -26,6 +26,9 @@ class Fact:
     question: str
     answer: str          # the CURRENT correct answer (post-update if updated)
     updated: bool = False
+    category: str = ""           # benchmark question category (real datasets)
+    is_abstention: bool = False  # gold answer is "not answerable" (abstention probe)
+    evidence: list = field(default_factory=list)  # gold evidence ids (optional)
 
 
 @dataclass

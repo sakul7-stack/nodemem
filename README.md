@@ -1,30 +1,37 @@
-# Persistent Note-Based Memory Pilot Study
+# Persistent Note-Based Memory: Real-Benchmark Cost/Retention Study
 
 Reference implementation and evaluation harness for the paper
-*"Persistent Note-Based Memory for LLM Agents: A Pilot Study of Cost,
-Retention, and Scaling Limits."*
+*"Cheap Structured Memory for LLM Agents: A Cost–Retention Study on Real
+Long-Conversation Benchmarks."*
 
 A cheap model (the **extractor**) reads conversation segments and writes
-structured, append-only **notes**; an expensive model (the **synthesizer**)
-answers each turn from those notes plus a short recent-message window instead of
-the full transcript. The live n=16 result does **not** show a cost-saving win over
-full context at <=56 messages; this repository therefore frames the work as a
-pilot/cautionary study plus a reproducible path toward the longer-horizon
-experiments needed to validate the idea.
+structured memory (latest-value **fact slots** and/or append-only **notes**); a
+larger model (the **synthesizer**) answers each question from that compact memory
+— optionally fused with **BM25 retrieval** over past turns — plus a short
+recent-message window, instead of the full transcript.
+
+The evaluation now runs on **real, human-annotated long-conversation benchmarks**
+(**LoCoMo**, **LongMemEval**) with an **LLM-as-judge** scorer, replacing the
+earlier synthetic planted-fact pilot. On LoCoMo (conversations of several hundred
+turns), the slots+retrieval hybrid and BM25 retrieval **match or exceed
+full-context retention at 5–10% of the cost** (real token reduction > 95%). See
+`REAL_DATA_EXPERIMENTS.md` for the live status, exact results, rate-limit notes,
+and the one-command **resume** instructions.
 
 ## What's here
 
 | File | Purpose |
 |------|---------|
-| `hierarchical_memory.py` | `HierarchicalMemory`, the append-only `NotesFile`, the provider abstraction (Anthropic + an offline mock), and the four comparison strategies. |
-| `token_utils.py` | Provider-usage and local `tiktoken` token accounting plus a cost model that includes extractor and notes-growth terms. |
-| `datasets.py` | Deterministic synthetic conversation suite with planted facts and adversarial **fact-update** probes. |
-| `evaluate.py` | Runs all baselines, measures token reduction / cost / retention / latency, supports the cheap-vs-expensive-extractor **ablation**, long-horizon stress scale, and optional notes compaction. |
-| `make_figures.py` | Rebuilds publication figures and the deterministic long-horizon cost simulation. |
-| `FINDINGS.md` | Concise measured findings, long-horizon simulation interpretation, and live-rerun status. |
-| `NEXT_EXPERIMENT.md` | Proposed fact-slot memory experiment to test a more compact latest-value memory representation. |
-| `scripts/` | Reproducibility helpers for live Groq reruns, result aggregation, paired analysis, and publication-readiness checks. |
-| `figures/` | Generated PDF/PNG figures for the paper and report. |
+| `hierarchical_memory.py` | Memory stores + strategies: append-only `NotesFile`, `SlotMemoryStore`, BM25/dense retrievers, `FullContext`, `Truncation`, `RunningSummary`, `Hierarchical`, `SlotMemory`, `RetrievalRAG`, `SlotRAGHybrid`, and the provider clients (Anthropic + Groq/OpenAI-compatible + offline mock). |
+| `real_datasets.py` | Loaders for **LoCoMo** and **LongMemEval** into the common `Case`/`Fact` shape, with category labels and abstention flags. |
+| `judge.py` | LLM-as-judge scorer using the official LongMemEval grading prompts (containment fallback offline). |
+| `datasets.py` | Retained deterministic synthetic suite (offline sanity check only). |
+| `evaluate.py` | Runs all strategies, real or synthetic datasets, LLM-judge scoring, per-category + per-question metrics, `--resume`, and per-call failure resilience. |
+| `token_utils.py` | Provider-usage and local `tiktoken` token accounting plus the cost model. |
+| `make_figures.py` | Rebuilds figures (frontier, per-category, cost-vs-length simulation). |
+| `scripts/` | `paired_analysis.py` (question-level paired tests), `summarize_results.py` (paper tables), aggregation, audit, Groq runner. |
+| `REAL_DATA_EXPERIMENTS.md` | **Live status, results, rate-limit findings, and resume guide.** |
+| `figures/` | Generated PDF/PNG figures for the paper. |
 
 ## Baselines
 

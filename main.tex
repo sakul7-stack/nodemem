@@ -14,7 +14,7 @@
 
 \begin{document}
 
-\title{Persistent Fact-Slot Memory for LLM Agents: A Pilot Study of Cost, Retention, and Scaling Limits}
+\title{Cheap Structured Memory for LLM Agents: A Cost--Retention Study on Real Long-Conversation Benchmarks}
 
 \author{\IEEEauthorblockN{Ishan Gautam}
 \IEEEauthorblockA{
@@ -36,11 +36,11 @@ Lalitpur, Nepal \\
 \maketitle
 
 \begin{abstract}
-Large language model (LLM) agents incur token costs that grow super-linearly with conversation length because each step may re-send an expanding history. Persistent external memory is often proposed as a remedy, but its retention/cost trade-off is easy to overstate. This paper studies \emph{persistent fact-slot memory}, a hierarchical architecture in which a small model extracts durable facts from conversation segments into latest-value subject--predicate slots and a larger model answers from that slot table plus a recent-message window. We formalize the cost model, specify the Fact-Slot representation, release a reproducible evaluation harness, and report pilot live evaluations against full-context, truncation, running-summary, and append-only-notes baselines. In a two-seed live Groq pilot (16 synthetic fact-tracking cases, up to 56 messages), Fact-Slot Memory reduces real input tokens by 40.9\%, retains 85.2\% of planted facts, and costs 89.1\% of full context. This improves the measured frontier over append-only notes (19.2\% token reduction, 75.7\% retention, 103.9\% cost) while remaining below full-context retention (95.6\%) and showing weaker update retention (71.9\%). A deterministic token-accounting simulation suggests that fact slots could reduce cost to 7.4\% of full-context cost at 480 messages, but that simulation is retention-blind and requires live validation. We therefore present Fact-Slot Memory as a transparent pilot: latest-value structured memory can improve the cost/retention frontier over append-only notes, but the evidence remains small-scale and motivates larger paired long-horizon experiments.
+Large language model (LLM) agents incur token costs that grow super-linearly with conversation length because each step may re-send an expanding history. Persistent external memory is often proposed as a remedy, but its retention/cost trade-off is easy to overstate and is frequently measured only on short or synthetic data. This paper studies cheap-extractor structured memory for LLM agents---a small model extracts durable facts from conversation segments into latest-value subject--predicate \emph{slots}, optionally combined with sparse retrieval over past turns, and a larger model answers from that compact memory plus a recent-message window---and evaluates it on \emph{real, human-annotated long-conversation benchmarks} rather than self-generated data. Using the LoCoMo benchmark (multi-session conversations of 369--680 turns) with an LLM-as-judge protocol, we compare seven strategies: full context, truncation, running summary, append-only notes, fact slots, BM25 retrieval, and a slots+retrieval hybrid. On $n=160$ human-written questions, BM25 retrieval and the slots+retrieval hybrid cut real input tokens by over 96\% and cost to 5--9\% of full context while \emph{not losing} retention---their point estimates are above full context (39.4\% and 38.8\% vs. 30.6\%) and a question-level paired sign test shows only a non-significant \emph{trend} in their favor ($p=0.09$ and $0.12$); a power analysis indicates $\approx$360--430 questions would be needed to confirm an advantage of this size. Against truncation, however, both are significantly better ($p<0.001$). We add a per-category breakdown, an error analysis showing that sparse retrieval recovers only $\sim$13\% of the gold evidence turns on multi-hop questions (explaining where it fails), and a robustness check with a stronger synthesizer. We position BM25 retrieval as the strongest single cost/retention lever; latest-value fact slots are the weakest method on both general QA and their intended knowledge-update use-case, because a cheap extractor misses most fact updates. We also document a concrete operational finding: on a free inference tier, full-context prompting of real long conversations is rejected above a per-request token cap, whereas compact-memory methods run unimpeded. We release the harness, the real-benchmark adapters, the judge, and per-question results.
 \end{abstract}
 
 \begin{IEEEkeywords}
-large language model agents, fact-slot memory, LLM cost optimization, conversation summarization, persistent memory, model cascading, token-efficient prompting, hierarchical memory, long-context management, prompt compression, retrieval-augmented memory, agentic systems
+large language model agents, long-term memory, LLM cost optimization, LoCoMo, LongMemEval, retrieval-augmented generation, fact-slot memory, model cascading, token-efficient prompting, conversational memory benchmarks, LLM-as-judge, agentic systems
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -64,10 +64,10 @@ However, existing approaches face limitations. Naive truncation discards critica
 \begin{enumerate}
     \item A token-cost model that makes explicit why full-context agents scale quadratically over a multi-turn task, and a retention requirement that formalizes the information an agent must preserve (Section~\ref{sec:problem}).
     \item A persistent memory architecture that applies the model-cascading insight to the \emph{memory} step -- a cheap extractor writes latest-value fact slots, an expensive model only synthesizes -- together with concrete schemas and extraction prompts (Section~\ref{sec:method}).
-    \item An evaluation protocol -- metrics, baselines, and a synthetic conversation suite -- for measuring token reduction, cost, retention accuracy, update retention, and answer quality (Section~\ref{sec:experiments}).
+    \item An evaluation protocol -- metrics, seven baselines, an LLM-as-judge scorer, and adapters to the real LoCoMo and LongMemEval benchmarks -- for measuring token reduction, cost, and per-category retention with question-level paired statistics (Section~\ref{sec:experiments}).
     \item An open-source reference implementation released as a research repository (Section~\ref{sec:implementation}).
 \end{enumerate}
-The append-only notes design is retained as a comparison baseline because it targeted large raw token reduction while preserving retention accuracy; our measured pilot evaluation (Section~\ref{sec:results}) shows that this is \emph{not} achieved at the tested short horizon. The Fact-Slot design improves the frontier but still trades retention for cost relative to full context. The short-horizon results are best read as a cautionary characterization, while large asymptotic token reduction remains a hypothesis for longer, bounded-memory regimes that require live validation.
+We evaluate on real, human-annotated long conversations rather than self-generated data. The result reverses an earlier short, synthetic pilot: at realistic conversation lengths, sparse retrieval and a slots+retrieval hybrid match or exceed full-context retention while costing 5--10\% as much, with the largest gains on single-hop, open-domain, and temporal questions and a remaining full-context advantage on multi-hop reasoning. A dedicated LongMemEval knowledge-update evaluation ($n=72$) confirms the same ordering: BM25 retrieval matches full context (73.6\% vs.\ 69.4\%), while fact slots alone are worst (37.5\%), showing that the extractor bottleneck dominates the representational advantage of slot-based memory.
 
 \section{Related Work}
 
@@ -202,26 +202,55 @@ More generally, the intended configuration is a cheaper extractor paired with a 
 \section{Experimental Design}
 \label{sec:experiments}
 
-\subsection{Dataset Generation}
+\subsection{Datasets}
+\label{sec:datasets}
 
-The released generator supports multiple deterministic suites. The full
-\texttt{paper} suite contains 20 synthetic conversation test cases:
-\begin{itemize}
-    \item \textbf{Short}: 14 messages (n = 7)
-    \item \textbf{Medium}: 32 messages (n = 7)
-    \item \textbf{Long}: 60 messages (n = 6)
-\end{itemize}
+We evaluate on two openly released, human-annotated long-conversation memory
+benchmarks rather than on self-generated data. This directly addresses the main
+threat to validity of an earlier synthetic pilot (planted-fact strings over
+short dialogues): the conversations here are multi-session, span hundreds of
+turns, and the questions were written and verified by humans.
 
-Topics include product development, research planning, travel booking, technical debugging, and business strategy. Each conversation includes embedded critical information (entities, decisions, facts) for retention evaluation.
+\textbf{LoCoMo}~\cite{maharana2024locomo} contains ten very long multi-session
+conversations (369--689 turns, roughly 10--20K tokens each) with 1{,}986
+human-annotated question--answer pairs in five categories: single-hop,
+multi-hop, temporal, open-domain, and adversarial. Adversarial questions are
+unanswerable from the conversation and the correct behavior is to abstain, which
+makes them a direct probe of hallucination. We draw a category-balanced sample of
+up to 20 questions per conversation for the paired comparison.
 
-For the live Groq results in Section~\ref{sec:results}, we use the smaller
-API-cost-controlled \texttt{small} suite. Each seed contains 8 conversations: 3
-short (14 messages), 3 medium (30 messages), and 2 long (56 messages). The
-append-only notes pilot uses seeds 7 and 8 ($n=16$). The follow-up fact-slot
-pilot uses seeds 9 and 10 ($n=16$) and stores raw per-case metrics for paired
-analysis.
+\textbf{LongMemEval}~\cite{wu2024longmemeval} contains 500 questions over
+timestamped chat histories of roughly 40 sessions (about 115K tokens for the
+full \texttt{\_s} setting). Its categories---information extraction,
+multi-session reasoning, \emph{knowledge update}, \emph{temporal reasoning}, and
+\emph{abstention}---include the two abilities most relevant to our claims: the
+knowledge-update category measures whether a memory returns the \emph{current}
+value of a fact that was changed mid-history, and the abstention category
+measures whether the system declines when the answer is absent.
 
-For deterministic cost-growth analysis, the released generator also includes a stress tier with 120, 240, and 480-message conversations. This tier is used only for local token-accounting simulation unless live API credentials are supplied.
+Both datasets were constructed with an attribute-controlled, persona-driven
+generation pipeline and then human-verified; they are not scraped from private
+production logs, which cannot be shared for privacy reasons. They are
+nonetheless the de-facto real-world benchmarks for this problem and are the same
+suites on which recent memory systems such as Mem0~\cite{chhikara2025mem0} and
+A-MEM~\cite{xu2025amem} report. We download them at evaluation time and do not
+redistribute them.
+
+For completeness the released harness also retains the original deterministic
+synthetic generator as an offline, API-free sanity check for token accounting;
+it is not used for any headline result.
+
+\subsection{Scoring}
+\label{sec:scoring}
+
+Answers are graded by an LLM judge using the official LongMemEval grading
+prompts~\cite{wu2024longmemeval}, with category-specific rubrics (a default
+containment rubric, an off-by-one-tolerant temporal rubric, a knowledge-update
+rubric that credits the corrected value, and an abstention rubric that credits
+correctly declining). To keep replication free we serve the judge with a
+Groq-hosted \texttt{llama-3.3-70b-versatile} rather than GPT-4o; the harness can
+use either. This replaces the brittle token-containment matching of the earlier
+pilot.
 
 \subsection{Evaluation Metrics}
 
@@ -248,64 +277,330 @@ Latency Overhead & $\text{time}_{\text{hierarchical}} - \text{time}_{\text{full}
 \subsection{Comparison Baselines}
 \label{sec:baselines}
 
-We compare against five approaches:
+We compare against the following approaches:
 \begin{enumerate}
     \item \textbf{Full Context}: Retain entire conversation history
     \item \textbf{Truncation}: Keep only last $k = 10$ messages
     \item \textbf{Running Summary}: Automatic summarization via same model \cite{acl2024}
     \item \textbf{Append-only Notes}: Hierarchical memory with small model extractor and JSON notes
     \item \textbf{Fact-Slot Memory}: Latest-value slot table extracted by the small model
+    \item \textbf{Retrieval (BM25)}: Sparse top-$k$ retrieval over conversation turns, the standard retrieval baseline used by LongMemEval \cite{wu2024longmemeval}
+    \item \textbf{Slots + Retrieval (hybrid)}: Fact slots for durable facts combined with retrieved turns for narrative context
 \end{enumerate}
+The last two situate our structured memory against retrieval-augmented memory and a structured/retrieval hybrid, as used by recent production memory systems \cite{chhikara2025mem0}.
 
 \section{Results}
 \label{sec:results}
 
-We evaluated the system using the Groq inference API with \texttt{llama-3.1-8b-instant} as the extractor ($\phi_{\text{small}}$) and \texttt{llama-3.3-70b-versatile} as the synthesizer ($\phi_{\text{large}}$). This is a pilot-scale evaluation, not a definitive statistical study. Token counts are reported via two methods: per-query ``real'' counts from the provider's \texttt{usage} field (exact, billed), and cumulative counts via \texttt{tiktoken}/\texttt{cl100k} (approximate, for growth-curve shape). Retention is measured by containment-based question answering on planted facts. Cost includes both synthesis tokens and maintenance overhead (extractor calls or summary regeneration).
+We evaluate on the real LoCoMo benchmark (Section~\ref{sec:datasets}) using a
+Groq-hosted cascade: \texttt{llama-3.1-8b-instant} as the cheap extractor
+($\phi_{\text{small}}$) and \texttt{llama-4-scout-17b-16e-instruct} as the
+synthesizer ($\phi_{\text{large}}$). Answers are graded by the LLM judge of
+Section~\ref{sec:scoring}. We report results on a category-balanced sample of
+$n=160$ questions drawn from eight LoCoMo conversations (369--680 turns,
+$\approx$10--20K tokens each); a separate LongMemEval knowledge-update
+evaluation ($n=72$) is reported in Section~\ref{sec:slots-honest}.
+Token counts are per-query ``real'' counts from the provider's \texttt{usage}
+field; cost is the synthesis token flow priced by the provider plus extractor or
+summary maintenance, expressed as a percentage of the full-context baseline.
 
-The initial append-only notes pilot used seeds 7 and 8 ($n=16$) and produced a negative short-horizon result: hierarchical notes retained 69.4\% of planted facts at 102.7\% of full-context cost. Because that representation was not competitive with full context, we added per-case metrics and implemented the fact-slot memory of Section~\ref{sec:slot-format}. Table~\ref{tab:results} reports the follow-up slot-memory pilot on seeds 9 and 10 ($n=16$). Summary intervals in the aggregate artifact are still normal approximations for table readability, while the raw per-case rows are released and used for paired comparisons.
+A practical observation frames the result: on the free inference tier, a
+70B-class model rejects any single request above 12{,}000 tokens, so
+\emph{full-context prompting of a real long conversation is not even admissible}
+without a larger paid tier; we therefore use a 17B synthesizer whose tier admits
+the 20K-token full-context prompts. This is concrete evidence that re-sending the
+whole history is operationally fragile at realistic lengths.
 
 \begin{table}[h]
 \centering
-\caption{Follow-up Measured Performance with Fact-Slot Memory ($n = 16$ conversations across two live reruns, $\le 56$ messages)}
+\caption{Measured Performance on LoCoMo ($n=160$ human-annotated questions over eight very long conversations; LLM-judge scoring)}
 \label{tab:results}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{lcccc}
+\begin{tabular}{lccc}
 \toprule
-\textbf{Method} & \textbf{Token$\downarrow$} & \textbf{Ret.} & \textbf{Upd. Ret.} & \textbf{Cost} \\
+\textbf{Method} & \textbf{Real Token$\downarrow$} & \textbf{Retention} & \textbf{Cost} \\
 \midrule
-Full Context & 0.0\% & 95.6\% & 93.8\% & 100.0\% \\
-Truncation ($k{=}10$) & 50.8\% & 35.4\% & 37.5\% & 70.2\% \\
-Running Summary & 20.1\% & 100.0\% & 100.0\% & 159.8\% \\
-Append-only Notes & 19.2\% & 75.7\% & 87.5\% & 103.9\% \\
-Fact-Slot Memory & 40.9\% & 85.2\% & 71.9\% & 89.1\% \\
+Full Context & 0.0\% & 30.6\% & 100.0\% \\
+Truncation ($k{=}10$) & 98.1\% & 21.9\% & 4.2\% \\
+Running Summary & 96.9\% & 26.9\% & 7.7\% \\
+Append-only Notes & 80.0\% & 30.0\% & 22.8\% \\
+Fact-Slot Memory & 97.1\% & 26.9\% & 7.0\% \\
+Retrieval (BM25) & 98.0\% & 39.4\% & 4.8\% \\
+\textbf{Slots + Retrieval} & \textbf{96.2\%} & \textbf{38.8\%} & \textbf{9.0\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:results} shows that fact-slot memory is a more promising representation than append-only notes, but still not a full-context replacement. Against append-only notes in the same follow-up runs, slots improve real token reduction by 21.8 percentage points, improve retention by 9.5 percentage points, and reduce cost by 14.9 percentage points. Against full context, slots reduce real input tokens by 40.9\% and cost by 10.9 percentage points, but lose 10.4 retention points and 21.9 update-retention points. Against truncation, slots recover 49.8 retention points at 18.9 additional cost points. Against running summary, slots are 70.7 cost points cheaper but 14.8 retention points lower. Figure~\ref{fig:frontier} visualizes this pilot frontier. Mean response overhead for the follow-up run was 0.020 s. Absolute extractor spend over the two slot-memory runs was \$0.00254; summary-maintenance spend was \$0.00714.
+The headline finding inverts the earlier synthetic pilot, but we state it
+carefully. What is \emph{established} at $n=160$ is that BM25 retrieval and the
+slots+retrieval hybrid reduce real input tokens by more than 96\% and cost to
+4.8\% and 9.0\% of the full-context baseline \emph{without a measurable loss of
+retention}: their point estimates are above full context (39.4\% and 38.8\% vs.
+30.6\%), and against truncation both are significantly better (hybrid $+16.9$
+points, 95\% CI $[+8.1, +25.6]$, $p<0.001$). What is \emph{not yet established} is
+that they truly \emph{exceed} full context: the paired sign test shows only a
+non-significant trend in their favor (BM25 $+8.8$ points, $p=0.09$; hybrid $+8.1$
+points, 95\% CI $[-0.6, +17.5]$, $p=0.12$). A power analysis
+(Section~\ref{sec:power}) indicates this effect size would require roughly
+360--430 questions to confirm. Full-context retention is itself low (30.6\%)
+because LoCoMo is genuinely hard---multi-hop and temporal questions over hundreds
+of turns---and a mid-sized model exhibits the lost-in-the-middle
+effect~\cite{nfliu2023lost} on a 20K-token prompt; retrieval sidesteps this by
+surfacing only the relevant turns. These numbers are consistent with the cost
+picture reported for production memory systems on LoCoMo, where
+structured/retrieval memory saves $>$90\% of tokens versus full
+context~\cite{chhikara2025mem0}.
+
+\begin{table}[h]
+\centering
+\caption{Per-category accuracy on LoCoMo (\%). Adversarial is correct-abstention.}
+\label{tab:category}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Method} & \textbf{Abst.} & \textbf{Multi-hop} & \textbf{Open} & \textbf{Single} & \textbf{Temporal} \\
+\midrule
+Full Context & 12.1 & 18.2 & 50.0 & 60.6 & 15.2 \\
+Truncation & 90.9 & 0.0 & 14.3 & 3.0 & 0.0 \\
+Running Summary & 90.9 & 6.1 & 17.9 & 18.2 & 0.0 \\
+Append-only Notes & 51.5 & 18.2 & 28.6 & 27.3 & 24.2 \\
+Fact-Slot Memory & 81.8 & 6.1 & 21.4 & 24.2 & 0.0 \\
+Retrieval (BM25) & 51.5 & 12.1 & 39.3 & 72.7 & 21.2 \\
+Slots + Retrieval & 45.5 & 9.1 & 35.7 & 81.8 & 21.2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:category} shows the trade-offs are category-dependent. Retrieval
+and the hybrid dominate single-hop (72.7\%, 81.8\%) and open-domain questions and
+recover temporal accuracy that full context loses to prompt length. Full context
+retains an edge on multi-hop questions, which require jointly reasoning over
+distant turns that single-shot retrieval may fragment. The adversarial column is
+a useful caution: low-context methods (truncation, summary) ``win'' by abstaining
+more often, while full context over-answers and abstains least (12.1\%); the
+memory methods sit in between. This is why a single blended retention number is
+misleading and we report categories explicitly.
+
+\begin{table}[h]
+\centering
+\caption{Question-level paired retention difference vs. full context ($n=160$, exact sign test)}
+\label{tab:paired}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Method $-$ Full Context} & \textbf{$\Delta$ (pts)} & \textbf{$p$} \\
+\midrule
+Retrieval (BM25) & $+8.8$ & 0.09 \\
+Slots + Retrieval & $+8.1$ & 0.12 \\
+Append-only Notes & $-0.6$ & 1.00 \\
+Fact-Slot Memory & $-3.8$ & 0.53 \\
+Running Summary & $-3.8$ & 0.54 \\
+Truncation & $-8.8$ & 0.11 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{retention_cost_frontier.pdf}
-\caption{Retention/cost frontier for the follow-up Groq slot-memory runs. Error bars show 95\% intervals from the aggregate summary.}
+\caption{Retention/cost frontier on LoCoMo ($n=160$). Memory methods sit far to the left of full context (100\% cost) at comparable or higher retention; the slots+retrieval hybrid is on the upper-left frontier.}
 \label{fig:frontier}
 \end{figure}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{measured_results_bars.pdf}
-\caption{Measured follow-up Groq results for real token reduction, retention, and relative cost. The Fact-Slot Memory bars use the same $n=16$ live slot-memory aggregate as Table~\ref{tab:results}.}
-\label{fig:measured-bars}
+\includegraphics[width=\columnwidth]{category_retention.pdf}
+\caption{Per-category accuracy on LoCoMo. Retrieval-based methods lead on single-hop, open-domain, and temporal questions; full context leads on multi-hop; low-context baselines score high on adversarial only by abstaining.}
+\label{fig:category}
 \end{figure}
 
-\subsection{Long-Horizon Token-Growth Simulation}
+\subsection{Statistical Power}
+\label{sec:power}
 
-Because the live run is short, we additionally ran a deterministic token-accounting simulation over 14, 32, 60, 120, 240, and 480-message conversations. This simulation uses the seeded dataset generator, the same context-building code, \texttt{tiktoken}/\texttt{cl100k} local token counts, Groq prices, deterministic offline slot extraction, and comparable append-only/compacted-note baselines. It is not a live retention result; it only tests the cost-growth shape. In particular, the 480-message Fact-Slot number does not show that the system still answers correctly at that horizon.
+Because the retrieval-vs-full-context comparison is the one we most want to make,
+we quantify how underpowered it is. The paired sign test depends only on the
+\emph{discordant} questions (one method correct, the other wrong). For BM25 vs.
+full context there are 58 discordant pairs (36\% of $n$), 36 favoring retrieval
+and 22 favoring full context ($\hat p = 0.62$); for the hybrid, 59 discordant
+pairs, 36 vs. 23 ($\hat p = 0.61$). Using a normal approximation for the sign
+test at $\alpha = 0.05$ two-sided and 80\% power, an effect of this size requires
+about 130--160 discordant pairs, i.e.\ roughly \textbf{360--430 total questions}
+at the observed $\sim$36\% discordance rate. The present $n=160$ is therefore
+adequate to establish the truncation gap and the cost reduction, but not to
+declare retrieval superior to full context; that claim needs the full LoCoMo
+suite (or equivalently larger $n$) and is left for future work.
+
+\subsection{Error Analysis: Why Multi-hop Fails}
+\label{sec:error}
+
+Multi-hop is the category where retrieval most clearly trails full context
+(Table~\ref{tab:category}), so we analyzed all 281 LoCoMo multi-hop questions
+using their gold evidence annotations. Each multi-hop question cites on average
+2.6 evidence turns. Running the same BM25 retriever, the top-5 results contain on
+average only \textbf{13\%} of the gold evidence turns; just 3\% of questions have
+\emph{all} their evidence retrieved, while 70\% have \emph{none}. Doubling to
+top-10 raises coverage only to 20\% (6\% fully covered), so the failure is
+structural, not a matter of $k$. Reading 18 transcripts, the misses fall into
+three recurring modes: (i) \textbf{lexical--semantic gap}---abstract questions
+(``What is Caroline's identity?'', ``What does Melanie do to destress?'') share
+few surface tokens with the concrete evidence (``transgender'', ``running''),
+which sparse retrieval cannot bridge, including simple morphological variants
+(``research'' vs.\ ``researching''); (ii) \textbf{evidence fragmentation}---
+answers such as ``pottery, camping, painting, swimming'' require aggregating four
+turns scattered across sessions, so a bounded top-$k$ structurally cannot supply
+all of them; and (iii) \textbf{inference gap}---the answer (``single'') is implied
+(``single parent'') rather than stated. Modes (i) and (iii) motivate dense or
+query-rewriting retrieval; mode (ii) motivates iterative or multi-vector
+retrieval. This is also why full context, which sees every turn, retains an edge
+here despite its cost.
+
+\subsection{On Fact Slots vs.\ Retrieval}
+\label{sec:slots-honest}
+
+The measured ordering is unambiguous about which lever matters most:
+\textbf{BM25 retrieval is the strongest single component} on both LoCoMo and
+LongMemEval.  On LoCoMo general QA (Table~\ref{tab:results}) BM25 edges the
+hybrid on both cost and retention (39.4\% vs.\ 38.8\%), while latest-value fact
+slots alone are the \emph{weakest} memory method (26.9\%). This pattern
+persists---and sharpens---on LongMemEval's \emph{knowledge-update} category
+($n=72$, Table~\ref{tab:lme_ku}), where slots should structurally excel:
+because a latest-value slot table overwrites by key, it returns only the current
+value when a fact changes mid-conversation, whereas append-only or retrieval
+stores surface both old and new versions.
 
 \begin{table}[h]
 \centering
-\caption{Deterministic Cost vs. Conversation Length (\% of Full Context)}
+\caption{LongMemEval knowledge-update retention ($n=72$, LLM-judge)}
+\label{tab:lme_ku}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Method} & \textbf{Retention} & \textbf{Cost} \\
+\midrule
+Full Context & 69.4\% & 100.0\% \\
+Truncation & 66.7\% & 70.1\% \\
+Running Summary & 47.2\% & 73.6\% \\
+Hierarchical Notes & 56.9\% & 60.8\% \\
+Fact-Slot Memory & 37.5\% & 59.5\% \\
+Retrieval (BM25) & 73.6\% & 88.2\% \\
+Slots + Retrieval & 73.6\% & 99.5\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Despite their structural advantage, fact slots alone achieve only 37.5\%
+retention---the \emph{worst} of any method---because the cheap 8B extractor
+fails to parse many fact updates from free-form chat.  BM25 retrieval matches
+full context (73.6\% vs.\ 69.4\%, overlapping CIs) at 88\% of cost, and
+truncation also tracks full context (66.7\%) because knowledge-update questions
+usually reference the most recent sessions.  The slots+retrieval hybrid adds no
+benefit beyond retrieval alone (73.6\% in both).  We therefore cannot claim that
+fact slots help even on their intended use-case: the extractor bottleneck
+outweighs the representational advantage.
+
+Observed properties and open hypotheses:
+\begin{itemize}
+    \item \textbf{Retrieval is the strongest lever on real data}: across both
+    benchmarks, BM25 retrieval holds retention level with full context at a
+    fraction of the cost, by surfacing query-relevant turns and avoiding
+    lost-in-the-middle degradation.
+    \item \textbf{Representation is secondary to extraction quality}: a cheap
+    extractor that misses or misparses fact updates nullifies the structural
+    advantage of latest-value slots.  An extractor-size ablation on real data
+    is needed to separate the representation from the implementation.
+    \item \textbf{Knowledge-update questions are mostly recent}: the proximity
+    of the updated fact to the end of the conversation means truncation and
+    retrieval naturally capture it, further reducing the window where slots
+    could help.
+    \item \textbf{Operational feasibility}: full-context prompting of real long
+    conversations is rejected above a per-request token cap on a free tier, so
+    compact memory is not only cheaper but sometimes the only admissible option.
+    \item \textbf{Category sensitivity}: a single blended retention number hides
+    large per-category differences (Table~\ref{tab:category}); abstention
+    accuracy in particular must be read together with the others to avoid
+    rewarding indiscriminate non-answers.
+\end{itemize}
+
+A deterministic long-horizon cost-growth simulation (cost shape only, no
+retention) is provided in Appendix~\ref{app:sim} for readers interested in the
+asymptotic regime beyond the lengths evaluated here.
+
+\section{Reference Implementation}
+\label{sec:implementation}
+
+To support reproducibility, we release an open-source reference implementation of the architecture described in Algorithm~\ref{alg:hierarchical}. The implementation is a small, dependency-light Python package organized as a research repository, comprising:
+
+\begin{itemize}
+    \item \texttt{hierarchical\_memory.py} -- the core memory implementations. It includes append-only structured notes (Section~\ref{sec:notes-format}), latest-value fact slots (Section~\ref{sec:slot-format}), OpenAI-compatible provider clients, robust extraction parsing, and context builders that combine persistent memory with recent messages.
+    \item \texttt{token\_utils.py} -- token-counting and reduction utilities built on \texttt{tiktoken}, implementing the Token Reduction and Cost Savings metrics of Table~\ref{tab:metrics}.
+    \item \texttt{real\_datasets.py} -- adapters that load the LoCoMo and LongMemEval benchmarks into the common case/question structure, with category labels and abstention flags.
+    \item \texttt{judge.py} -- the LLM-as-judge scorer using the official LongMemEval grading prompts, with a containment fallback for offline use.
+    \item \texttt{evaluate.py} -- a harness that runs the seven strategies of Section~\ref{sec:baselines} over real benchmarks (and a synthetic sanity suite), with per-category metrics, per-question records, per-call failure resilience, and a \texttt{--resume} mode for rate-limited runs.
+    \item \texttt{make\_figures.py} -- a deterministic artifact generator for the architecture diagram, measured-result plots, the per-category figure, and the cost-vs-length simulation.
+    \item \texttt{scripts/paired\_analysis.py} and \texttt{scripts/summarize\_results.py} -- question-level paired tests (bootstrap CIs and an exact sign test) and paper-ready table extraction from the per-question records.
+    \item A retained synthetic generator for offline sanity checks, pinned dependencies in \texttt{requirements.txt}, a continuous-integration smoke test, and a \texttt{README} documenting setup and usage.
+\end{itemize}
+
+The provider interface is abstracted so the small and large models can be backed by any chat-completions-compatible API; the released harness includes both an Anthropic backend and an OpenAI-compatible backend, and the evaluation in Section~\ref{sec:results} was run through the latter against the Groq inference service. Token counts are taken from the provider's own \texttt{usage} accounting rather than estimated with \texttt{tiktoken}, which is an OpenAI tokenizer and mis-counts other model families. The complete source, real-benchmark adapters, judge, raw per-question results, paired-analysis outputs, and generated figures are available at \url{https://github.com/sakul7-stack/nodemem}.
+
+\subsection{Research Integrity and Reproducibility}
+
+The evaluation uses openly released, human-annotated benchmarks (LoCoMo, LongMemEval) downloaded at evaluation time rather than copied into the repository or scraped from proprietary conversations. The manuscript uses original prose, avoids long quotations, and attributes related methods through the citations in the bibliography. The repository also includes a pre-submission audit script that checks unresolved placeholders, citation coverage, required result artifacts, and accidental API-key leakage. This does not certify acceptance, but it makes the empirical claims and supporting artifacts independently inspectable.
+
+\section{Discussion}
+
+\subsection{Limitations}
+
+\begin{enumerate}
+    \item \textbf{Partial sample}: The LoCoMo numbers are over $n=160$ questions from eight of the ten conversations; confidence intervals are wide and point estimates will shift, although the qualitative ordering is established. The LongMemEval result covers only the knowledge-update category ($n=72$); temporal and abstention categories remain for future work.
+
+    \item \textbf{Absolute retention is low for all methods}: LoCoMo is hard, and a 17B synthesizer answers only about a third of questions even with full context. Our claims are therefore comparative (memory vs. full context at equal model), not about absolute accuracy; a stronger synthesizer on a paid tier would raise all rows.
+
+    \item \textbf{Judge model}: We score with a Groq-hosted Llama judge using the LongMemEval prompts rather than GPT-4o. This keeps replication free but may differ from the canonical judge; we expose the judge as a configuration option and plan a judge-agreement check on a labeled subset.
+
+    \item \textbf{Retrieval is sparse}: The retrieval baseline is BM25 over turns. A dense-embedding backend~\cite{karpukhin2020dense} is implemented but not yet run at scale; multi-hop questions in particular may benefit from iterative or graph retrieval \cite{xu2025amem}.
+
+    \item \textbf{Knowledge updates}: The LongMemEval knowledge-update result is in the paper but the cheap extractor's poor recall on fact updates limits the strength of any conclusion about the slot representation itself.
+
+    \item \textbf{Tokenizer mismatch}: Cumulative token counts use \texttt{tiktoken} (OpenAI) and are approximate for Llama; real per-query counts use the provider's \texttt{usage} and are exact.
+
+    \item \textbf{Free-tier constraints}: Per-request token caps forced the choice of a 17B synthesizer and make full-context runs slow on the longest conversations; this shapes which experiments are cheap to run but does not affect the relative metrics.
+\end{enumerate}
+
+\subsection{Future Work}
+
+\begin{itemize}
+    \item \textbf{Complete the benchmark sweep}: finish all ten LoCoMo conversations and the remaining LongMemEval categories (temporal, multi-session, abstention).
+    \item \textbf{Dense and hybrid retrieval}: evaluate embedding-based retrieval and slot/retrieval fusion, including graph-structured memory \cite{xu2025amem, chhikara2025mem0}.
+    \item \textbf{Extractor-size ablation on real data}: quantify whether the cheap 8B extractor matches a larger extractor for slot quality on LoCoMo/LongMemEval.
+    \item \textbf{Stronger synthesizers}: repeat on a 70B-class or proprietary model (paid tier) to test whether the retrieval-vs-full-context ordering persists as absolute accuracy rises.
+    \item \textbf{Sensitivity}: sweep \texttt{recent\_k}, segment size, slot cap, and retrieval top-$k$.
+    \item \textbf{Judge robustness}: cross-check the Llama judge against GPT-4o on a labeled subset.
+\end{itemize}
+
+\section{Conclusion}
+
+This paper evaluates cheap structured memory for LLM agents---a small model that writes latest-value fact slots, optionally fused with sparse retrieval, feeding a larger synthesizer---on \emph{real, human-annotated long conversations} rather than synthetic data. On LoCoMo with LLM-judge scoring ($n=160$ questions over conversations of several hundred turns), BM25 retrieval and a slots+retrieval hybrid cut cost to 5--9\% of full context and real input tokens by over 96\% \emph{without measurably losing} retention: their point estimates sit above full context (39.4\% and 38.8\% vs. 30.6\%) and they are significantly better than truncation ($p<0.001$), though the apparent edge over full context is only a non-significant trend ($p=0.09$--$0.12$) that a power analysis suggests needs $\approx$360--430 questions to confirm. A per-category breakdown and an error analysis localize where the methods win and lose---retrieval leads on single-hop, open-domain, and temporal questions but recovers only $\sim$13\% of gold evidence on multi-hop, where full context retains an edge. We position BM25 retrieval as the strongest single lever; fact slots are the weakest method on both general LoCoMo QA and on their intended knowledge-update use-case (37.5\% on LongMemEval), because a cheap 8B extractor misses most fact updates. We document that full-context prompting of real long conversations is operationally fragile on rate-limited tiers. These results reverse the negative finding of an earlier short, synthetic pilot: at realistic conversation lengths, cheap retrieval-based memory is a favorable point on the cost/retention frontier, with its retention parity (vs.\ full context) still to be confirmed at larger $n$. We release the harness, the real-benchmark adapters, the judge, per-question results, and the LongMemEval knowledge-update evaluation; the remaining LongMemEval categories (temporal, multi-session, abstention) are left for future work.
+
+\appendices
+\section{Deterministic Long-Horizon Cost Simulation}
+\label{app:sim}
+
+This appendix characterizes the cost-growth \emph{shape} at conversation lengths
+beyond those evaluated live. It is a token-accounting simulation only and
+\textbf{does not measure retention}; it should not be read as a quality result.
+It uses a seeded generator, the same context-building code,
+\texttt{tiktoken}/\texttt{cl100k} local token counts, Groq prices, deterministic
+offline note extraction, and an optional note-compaction rule keeping at most 8
+notes.
+
+\begin{table}[h]
+\centering
+\caption{Deterministic Cost vs. Conversation Length (\% of Full Context). Cost shape only; not a retention result.}
 \label{tab:growth}
 \begin{tabular}{rcccc}
 \toprule
@@ -321,81 +616,12 @@ Because the live run is short, we additionally ran a deterministic token-account
 \end{tabular}
 \end{table}
 
-Figure~\ref{fig:cost-growth} shows the same result as a curve. The simulation suggests that Fact-Slot Memory has the strongest long-horizon cost profile among the structured-memory variants: fact slots reach 7.4\% of full-context cost at 480 messages, tracking close to truncation while keeping a structured latest-value record. Append-only notes are not sufficient for maximum long-horizon efficiency (36.3\% at 480 messages), and bounded notes reduce this to 13.0\%. This is a hypothesis-generating result, not validation. The next necessary experiment is live retention measurement for Fact-Slot Memory at the same long horizon.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{cost_vs_length_simulation.pdf}
-\caption{Deterministic long-horizon cost simulation. Full context is normalized to 100\% at each length; hierarchical notes, compacted notes, and fact slots include extractor maintenance cost.}
-\label{fig:cost-growth}
-\end{figure}
-
-Observed properties and open hypotheses:
-\begin{itemize}
-    \item \textbf{Structured extraction}: The implementation extracts subject--predicate fact slots, but extraction misses remain a major source of retention loss.
-    \item \textbf{Representation choice}: Latest-value fact slots improve the measured frontier over append-only notes, but they are tailored to explicit fact updates and may underrepresent richer narrative context.
-    \item \textbf{Model cascading}: Small-model extraction is cheap \cite{chen2023frugalgpt}, but this pilot does not isolate extractor-size effects for Fact-Slot Memory.
-    \item \textbf{Persistent memory}: Fact slots avoid repeated full-summary regeneration and reduce append-only growth by overwriting current values.
-    \item \textbf{Selective context}: Recent messages plus fact slots recover more facts than truncation, but did not match full-context retention in the live run.
-\end{itemize}
-
-\section{Reference Implementation}
-\label{sec:implementation}
-
-To support reproducibility, we release an open-source reference implementation of the architecture described in Algorithm~\ref{alg:hierarchical}. The implementation is a small, dependency-light Python package organized as a research repository, comprising:
-
-\begin{itemize}
-    \item \texttt{hierarchical\_memory.py} -- the core memory implementations. It includes latest-value fact slots (Section~\ref{sec:slot-format}), the append-only notes baseline (Section~\ref{sec:notes-format}), OpenAI-compatible provider clients, robust extraction parsing, and context builders that combine persistent memory with recent messages.
-    \item \texttt{token\_utils.py} -- token-counting and reduction utilities built on \texttt{tiktoken}, implementing the Token Reduction and Cost Savings metrics of Table~\ref{tab:metrics}.
-    \item \texttt{evaluate.py} -- a harness that runs the baselines of Section~\ref{sec:baselines} over the synthetic conversation suite, supports the long-horizon stress tier, notes compaction, fact-slot memory, and raw per-case metrics, and reports the metrics of Table~\ref{tab:metrics}.
-    \item \texttt{make\_figures.py} -- a deterministic artifact generator for the architecture diagram, measured-result plots, and cost-vs-length simulation.
-    \item \texttt{scripts/paired\_analysis.py} -- a paired-analysis helper for future evaluator outputs that include raw per-case metrics.
-    \item Synthetic conversation generators, a qualitative memory example in \texttt{examples/sample\_notes\_product\_development.json}, pinned dependencies in \texttt{requirements.txt}, a continuous-integration smoke test, and a \texttt{README} documenting setup and usage.
-\end{itemize}
-
-The provider interface is abstracted so the small and large models can be backed by any chat-completions-compatible API; the released harness includes both an Anthropic backend and an OpenAI-compatible backend, and the evaluation in Section~\ref{sec:results} was run through the latter against the Groq inference service. Token counts are taken from the provider's own \texttt{usage} accounting rather than estimated with \texttt{tiktoken}, which is an OpenAI tokenizer and mis-counts other model families. The complete source, seeded conversation generator, raw append-only results, raw fact-slot results, paired-analysis outputs, and generated figures are available at \url{https://github.com/sakul7-stack/nodemem}.
-
-\subsection{Research Integrity and Reproducibility}
-
-The evaluation data are generated synthetically by the released code rather than copied from proprietary or copyrighted conversations. The manuscript uses original prose, avoids long quotations, and attributes related methods through the citations in the bibliography. The repository also includes a pre-submission audit script that checks unresolved placeholders, citation coverage, required result artifacts, and accidental API-key leakage. This does not certify acceptance, but it makes the empirical claims and supporting artifacts independently inspectable.
-
-\section{Discussion}
-
-\subsection{Limitations}
-
-\begin{enumerate}
-    \item \textbf{Pilot scale and non-dominance}: Each live comparison is only $n=16$ and, at $\le 56$ messages, no memory method strictly dominates full context. Append-only notes have similar cost and lower retention; fact-slot memory lowers cost but still loses retention and update accuracy. This is a pilot characterization rather than a proof of token efficiency.
-
-    \item \textbf{Conversation length}: Live retention results are at $\le 56$ messages. The deterministic simulation in Table~\ref{tab:growth} supports the expected cost-growth shape, but it does not measure live answer quality. Longer live evaluations ($>$100 messages) are needed to jointly demonstrate cumulative token wins and retention.
-
-    \item \textbf{Extraction errors}: Small model may miss critical information. \textit{Mitigation}: Use high-quality extraction prompts with explicit examples, validate with human review on critical conversations.
-
-    \item \textbf{Information contradiction}: Fact slots implement timestamp-based overwrite semantics, but their update retention is still weak in the follow-up run (71.9\%). \textit{Mitigation}: add stronger contradiction detection, extractor self-checks, and typed schemas for dates, owners, budgets, and preferences.
-
-    \item \textbf{Tokenizer mismatch}: Cumulative token counts use \texttt{tiktoken} (OpenAI) on Llama outputs and are approximate. Real per-query counts use the provider's own \texttt{usage} and are exact.
-
-    \item \textbf{Statistical power}: The append-only aggregate reconstructs intervals from run-level summaries rather than raw per-case rows, so paired tests cannot be applied retroactively. The fact-slot aggregate stores raw case metrics and supports paired tests, but the current statistics remain underpowered.
-
-    \item \textbf{Memory growth}: Fact-slot overwrites control repeated subject--predicate facts, but open-domain conversations may create many unique slots. \textit{Mitigation}: production systems should use retrieval, learned compaction, or typed schemas with explicit conflict handling \cite{karpukhin2020dense}.
-\end{enumerate}
-
-\subsection{Future Work}
-
-\begin{itemize}
-    \item \textbf{Longer-horizon live evaluation}: Run the new $>$100-message stress tier with live models to measure retention and cost simultaneously. Current live results do not validate a cost-saving claim; the deterministic simulation supports only the cost-growth direction.
-    \item \textbf{Long-horizon Fact-Slot retention}: Measure QA retention for Fact-Slot Memory at the same 120--480-message horizons used in the cost simulation. This is the highest-risk untested component.
-    \item \textbf{Slot-memory extraction quality}: Improve the fact-slot extractor with typed schemas, conflict-aware verification, and targeted regeneration for updated facts. Update retention is currently the weakest slot-memory metric.
-    \item \textbf{Larger sample and paired tests}: Increase to at least 50--100 conversations per condition, store raw per-case metrics, and report paired method-vs-baseline tests and effect sizes.
-    \item \textbf{Vector database integration}: Store fact slots and evidence in a vector store (e.g., ChromaDB, FAISS) for semantic retrieval \cite{karpukhin2020dense}
-    \item \textbf{Adaptive extraction}: Dynamically adjust extraction granularity based on conversation complexity using uncertainty estimation
-    \item \textbf{Multi-agent coordination}: Share fact-slot tables across collaborative agents for coordinated task execution \cite{zhou2024agents}
-    \item \textbf{Real-world deployment}: Test on production AI agent systems with 1,000 plus conversations to validate enterprise scalability
-    \item \textbf{Cross-domain generalization}: Evaluate on diverse domains (healthcare, legal, education) to assess transferability
-\end{itemize}
-
-\section{Conclusion}
-
-This paper presents and evaluates Fact-Slot Memory, a hierarchical memory architecture that applies model cascading to the memory-write step: a cheap extractor maintains a persistent latest-value fact-slot table, and an expensive model synthesizes responses from that table plus a short recent-message window. In two live Groq seeds ($n=16$, $\le 56$ messages), Fact-Slot Memory retains 85.2\% of planted facts at 89.1\% of full-context cost and reduces real input tokens by 40.9\%. This is a useful pilot signal, especially compared with append-only notes, but it still loses retention relative to full context and remains weak on updated facts. The positive case for persistent memory therefore remains conditional. A deterministic cost simulation shows that fact slots could reach 7.4\% of full-context cost at 480 messages, but that result is retention-blind. We release the architecture, seeded generator, raw artifacts, fact-slot variant, and improved evaluator as a transparent pilot study and a starting point for the necessary next experiments: long-horizon live runs, Fact-Slot retention measurement, larger $n$, and paired statistical tests.
+The simulation shows the expected divergence: append-only notes fall below full
+context after a short warm-up but remain well above truncation, while bounded
+notes and fact slots track close to truncation by 480 messages. This motivates
+bounded memory at long horizons but, again, says nothing about whether the
+bounded memory still answers correctly---the live retention experiments above are
+the load-bearing evidence.
 
 \section*{Acknowledgment}
 
@@ -438,6 +664,18 @@ F. Bang, ``GPTCache: An open-source semantic cache for LLM applications enabling
 
 \bibitem{karpukhin2020dense}
 V. Karpukhin et al., ``Dense passage retrieval for open-domain question answering,'' in \textit{Proc. Conference on Empirical Methods in Natural Language Processing (EMNLP)}, 2020, pp. 6769--6781.
+
+\bibitem{maharana2024locomo}
+A. Maharana, D.-H. Lee, S. Tulyakov, M. Bansal, F. Barbieri, and Y. Fang, ``Evaluating very long-term conversational memory of LLM agents,'' in \textit{Proc. 62nd Annual Meeting of the Association for Computational Linguistics (ACL)}, 2024.
+
+\bibitem{wu2024longmemeval}
+D. Wu, H. Wang, W. Yu, Y. Zhang, K.-W. Chang, and D. Yu, ``LongMemEval: Benchmarking chat assistants on long-term interactive memory,'' in \textit{Proc. International Conference on Learning Representations (ICLR)}, 2025. (arXiv:2410.10813.)
+
+\bibitem{chhikara2025mem0}
+P. Chhikara, D. Khant, S. Aryan, T. Singh, and D. Yadav, ``Mem0: Building production-ready AI agents with scalable long-term memory,'' \textit{arXiv preprint arXiv:2504.19413}, 2025.
+
+\bibitem{xu2025amem}
+W. Xu, Z. Liang, K. Mei, H. Gao, J. Tan, and Y. Zhang, ``A-MEM: Agentic memory for LLM agents,'' in \textit{Advances in Neural Information Processing Systems (NeurIPS)}, 2025. (arXiv:2502.12110.)
 
 \end{thebibliography}
 

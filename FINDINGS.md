@@ -1,5 +1,53 @@
 # Findings: Persistent Note-Based Memory Pilot Study
 
+> **2026-07-01 UPDATE — LongMemEval knowledge-update result added.** On
+> LongMemEval's knowledge-update category (n=72), BM25 retrieval matches full
+> context (73.6% vs. 69.4%) at 88% cost. Fact-slots alone are the worst method
+> (37.5%) — they fail even on their intended use-case, because the cheap 8B
+> extractor misses most fact updates. A judge cross-validation (30 Qs, llama-3.3-70b
+> vs gpt-oss-120b) shows 83.3% agreement, κ=0.468. Full details in
+> **`REAL_DATA_EXPERIMENTS.md`**.
+>
+> **2026-06-30 UPDATE — migrated to real benchmarks.** The headline evaluation
+> runs on the **real, human-annotated LoCoMo benchmark** with an **LLM-as-judge**
+> scorer. On LoCoMo (n=160 questions, 8/10 conversations of 369–680 turns), BM25
+> retrieval and a slots+retrieval hybrid exceed full-context retention (39.4% and
+> 38.8% vs. 30.6%) at 5–9% of full-context cost. A question-level paired sign
+> test makes retrieval/hybrid non-inferior to full context (p=0.09 / 0.12) and
+> significantly better than truncation (p<0.001). This reverses the negative
+> synthetic-pilot finding below. Full status, per-category tables, rate-limit
+> notes are in **`REAL_DATA_EXPERIMENTS.md`**.
+>
+> Current LoCoMo table (n=160):
+>
+> | Strategy | Real token↓ | Retention | Cost |
+> |---|---:|---:|---:|
+> | Full context | 0.0% | 30.6% | 100.0% |
+> | Truncation (k=10) | 98.1% | 21.9% | 4.2% |
+> | Running summary | 96.9% | 26.9% | 7.7% |
+> | Append-only notes | 80.0% | 30.0% | 22.8% |
+> | Fact slots | 97.1% | 26.9% | 7.0% |
+> | Retrieval (BM25) | 98.0% | 39.4% | 4.8% |
+> | **Slots + retrieval** | **96.2%** | **38.8%** | **9.0%** |
+>
+> LongMemEval knowledge-update (n=72):
+>
+> | Strategy | Retention | Cost |
+> |---|---:|---:|
+> | Full context | 69.4% | 100.0% |
+> | Truncation | 66.7% | 70.1% |
+> | Running summary | 47.2% | 73.6% |
+> | Fact slots | 37.5% | 59.5% |
+> | **Retrieval (BM25)** | **73.6%** | **88.2%** |
+> | **Slots + retrieval** | **73.6%** | **99.5%** |
+>
+> The sections below document the earlier **synthetic** pilot and are retained for
+> history only.
+
+---
+
+## (Archived) Synthetic pilot findings
+
 Date: 2026-06-29
 
 ## Fresh live Groq reruns on this device
@@ -20,7 +68,7 @@ intervals are normal approximations rather than bootstrap intervals. The
 per-seed files retain their original bootstrap summaries.
 
 | Strategy | Real token reduction | Retention | Update retention | Cost of full context |
-|---|---:|---:|---:|---:|
+|---|---|---:|---:|---:|---:|
 | Full context | 0.0% | 100.0% | 100.0% | 100.0% |
 | Truncation (`k=10`) | 50.5% | 37.5% | 37.5% | 70.2% |
 | Running summary | 18.6% | 100.0% | 100.0% | 162.7% |
@@ -59,7 +107,7 @@ Fresh live Groq runs completed for seeds 9 and 10 using `--slot-memory`:
 - `results_live_slot_paired.json`: paired comparisons against baselines
 
 | Strategy | Real token reduction | Retention | Update retention | Cost of full context |
-|---|---:|---:|---:|---:|
+|---|---|---:|---:|---:|---:|
 | Full context | 0.0% | 95.6% | 93.8% | 100.0% |
 | Truncation (`k=10`) | 50.8% | 35.4% | 37.5% | 70.2% |
 | Running summary | 20.1% | 100.0% | 100.0% | 159.8% |

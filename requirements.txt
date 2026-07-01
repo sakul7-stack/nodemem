@@ -2,3 +2,7 @@ anthropic==0.112.0
 openai==2.44.0
 tiktoken==0.13.0
 matplotlib==3.11.0
+# Optional: dense (embedding) retrieval backend for `--rag-backend dense`.
+# BM25 retrieval and everything else work without it.
+# sentence-transformers==3.0.1
+

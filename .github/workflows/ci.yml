@@ -17,6 +17,8 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
       - name: Run offline evaluation smoke test
-        run: python evaluate.py --offline --scale tiny --out results_ci_offline.json
+        run: python evaluate.py --offline --scale tiny --slot-memory --rag --out results_ci_offline.json
+      - name: Check real-benchmark adapters and judge import
+        run: python -c "import real_datasets, judge, hierarchical_memory as h; h.build_retriever.__name__; print('adapters + judge import OK')"
       - name: Regenerate deterministic figures
         run: python make_figures.py --growth-out results_ci_growth.json

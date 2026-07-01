@@ -61,6 +61,8 @@ STRATEGIES = [
     ("running_summary", "Running summary"),
     ("hierarchical", "Append-only notes"),
     ("slot_memory", "Fact slots"),
+    ("rag", "Retrieval (BM25)"),
+    ("slot_rag_hybrid", "Slots + retrieval"),
 ]
 
 COLORS = {
@@ -69,6 +71,8 @@ COLORS = {
     "running_summary": "#54a24b",
     "hierarchical": "#b279a2",
     "slot_memory": "#e45756",
+    "rag": "#72b7b2",
+    "slot_rag_hybrid": "#9d755d",
 }
 
 
@@ -116,6 +120,40 @@ def plot_measured_bars(results: dict, out_dir: Path) -> None:
     save_figure(fig, out_dir, "measured_results_bars")
 
 
+def plot_category_retention(results: dict, out_dir: Path) -> None:
+    """Grouped bars: retention per question category for each strategy."""
+    strategies = available_strategies(results)
+    # union of categories present, in a stable order
+    cat_order = []
+    for key, _ in strategies:
+        for cat in results["strategies"][key].get("retention_by_category_pct", {}):
+            if cat not in cat_order:
+                cat_order.append(cat)
+    if not cat_order:
+        return
+    cat_order.sort()
+    n_groups = len(cat_order)
+    n_str = len(strategies)
+    width = 0.8 / max(1, n_str)
+    fig, ax = plt.subplots(figsize=(min(13, 2 + 1.6 * n_groups), 4.2))
+    for si, (key, label) in enumerate(strategies):
+        by_cat = results["strategies"][key].get("retention_by_category_pct", {})
+        xs = [i + si * width for i in range(n_groups)]
+        ys = [by_cat.get(cat, 0.0) for cat in cat_order]
+        ax.bar(xs, ys, width=width, color=COLORS.get(key, "#888"), label=label,
+               edgecolor="black", linewidth=0.3)
+    ax.set_xticks([i + (n_str - 1) * width / 2 for i in range(n_groups)])
+    ax.set_xticklabels([c.replace("_", " ") for c in cat_order], rotation=20, ha="right")
+    ax.set_ylabel("Retention / correct-abstention (%)")
+    ax.set_ylim(0, 105)
+    dataset = results.get("config", {}).get("dataset", "")
+    n = results.get("config", {}).get("n_cases_completed", "?")
+    ax.set_title(f"Per-category accuracy ({dataset}, n={n} conversations)")
+    ax.legend(frameon=False, fontsize=7, ncol=2)
+    ax.grid(axis="y", alpha=0.25)
+    save_figure(fig, out_dir, "category_retention")
+
+
 def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
     fig, ax = plt.subplots(figsize=(6.4, 4.4))
     for key, label in available_strategies(results):
@@ -138,7 +176,10 @@ def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
     ax.set_xlabel("Cost (% of full-context baseline)")
     ax.set_ylabel("Retention (%)")
     ax.set_title("Retention/cost frontier with 95% CIs")
-    ax.set_xlim(55, 190)
+    costs = [stat(results, key, "cost_pct_of_baseline")[0]
+             for key, _ in available_strategies(results)]
+    hi = max(costs + [100]) * 1.15
+    ax.set_xlim(0, max(120, hi))
     ax.set_ylim(0, 108)
     ax.grid(alpha=0.25)
     save_figure(fig, out_dir, "retention_cost_frontier")
@@ -404,6 +445,8 @@ def main() -> None:
     if results is not None:
         plot_measured_bars(results, args.out_dir)
         plot_retention_cost_frontier(results, args.out_dir)
+        plot_category_retention(results, args.out_dir)
+        plot_ablation(results, args.out_dir)
 
     print(f"Wrote figures to {args.out_dir}")
     print(f"Wrote growth simulation to {args.growth_out}")

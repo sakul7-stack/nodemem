@@ -21,6 +21,7 @@ apples-to-apples across methods.
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import time
@@ -128,7 +129,7 @@ class OpenAICompatClient:
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
                  min_interval_s: float = 0.0, max_retries: int = 1,
-                 api_keys: Optional[list[str]] = None):
+                 api_keys: Optional[list[str]] = None, timeout_s: float = 90.0):
         from openai import OpenAI
 
         key_candidates: list[str] = []
@@ -147,11 +148,14 @@ class OpenAICompatClient:
         if not key_candidates:
             raise ValueError("OpenAI-compatible client requires an API key")
 
+        # An explicit per-request timeout prevents a single hung request from
+        # stalling a whole run behind the SDK's long default timeout.
         self._clients = [
             OpenAI(
                 api_key=key,
                 base_url=base_url or os.environ.get("OPENAI_BASE_URL"),
                 max_retries=max_retries,
+                timeout=timeout_s,
             )
             for key in key_candidates
         ]
@@ -175,38 +179,27 @@ class OpenAICompatClient:
         import openai
 
         oai_msgs = ([{"role": "system", "content": system}] if system else []) + messages
-        max_attempts = max(15, 8 * len(self._clients))
+        max_attempts = 10000
         for attempt in range(max_attempts):
-            self._throttle()
             t0 = time.time()
-            client = self._clients[self._client_index % len(self._clients)]
-            self._client_index = (self._client_index + 1) % len(self._clients)
+            nc = len(self._clients)
+            idx = self._client_index % nc
+            self._client_index = (idx + 1) % nc
+            client = self._clients[idx]
             try:
                 resp = client.chat.completions.create(
                     model=model, max_tokens=max_tokens, messages=oai_msgs)
                 break
             except (openai.AuthenticationError, openai.PermissionDeniedError):
-                # If one key is invalid/disabled, drop only that client and try
-                # the next key. Never log the key value.
                 if len(self._clients) <= 1:
                     raise
-                failed_index = (self._client_index - 1) % len(self._clients)
-                self._clients.pop(failed_index)
+                self._clients.pop(idx)
                 self._client_index = self._client_index % len(self._clients)
                 time.sleep(0.5)
-            except openai.RateLimitError as e:
-                # Honor Retry-After when present (Groq returns it for TPM limits).
-                ra = None
-                try:
-                    ra = float(e.response.headers.get("retry-after", "")) if e.response else None
-                except Exception:
-                    ra = None
-                if len(self._clients) > 1 and attempt < len(self._clients) * 2:
-                    time.sleep(1.0)
-                else:
-                    time.sleep(min(max(ra or 20.0, 8.0), 65.0))
+            except openai.RateLimitError:
+                time.sleep(0.2)
             except (openai.InternalServerError, openai.APITimeoutError, openai.APIConnectionError):
-                time.sleep(6)
+                time.sleep(1)
         else:
             raise RuntimeError("exhausted retries against rate-limited endpoint")
         latency = time.time() - t0
@@ -681,6 +674,165 @@ class SlotMemory(Strategy):
             + "\n\nCurrent structured fact slots (latest values only):\n"
             + (rendered or "(none)")
         )
+        msgs = history[-self.recent_k:] + [{"role": "user", "content": query}]
+        return system, msgs
+
+
+# --------------------------------------------------------------------------- #
+# Retrieval-augmented memory (sparse BM25 by default, optional dense embeddings)
+# --------------------------------------------------------------------------- #
+
+
+def _retr_tokens(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+", text.lower())
+
+
+class BM25Retriever:
+    """Minimal in-memory BM25 (Okapi) over conversation chunks.
+
+    Pure Python, no dependencies. BM25 is the sparse-retrieval baseline used by
+    LongMemEval, so this is a faithful, reproducible retrieval comparator.
+    """
+
+    backend = "bm25"
+
+    def __init__(self, docs: list[str], k1: float = 1.5, b: float = 0.75):
+        self.docs = docs
+        self.tokenized = [_retr_tokens(d) for d in docs]
+        self.k1, self.b = k1, b
+        self.N = len(docs)
+        self.avgdl = sum(len(t) for t in self.tokenized) / self.N if self.N else 0.0
+        df: dict[str, int] = {}
+        for toks in self.tokenized:
+            for t in set(toks):
+                df[t] = df.get(t, 0) + 1
+        self.idf = {
+            t: math.log(1 + (self.N - n + 0.5) / (n + 0.5)) for t, n in df.items()
+        }
+
+    def retrieve(self, query: str, top_k: int = 5) -> list[str]:
+        q = _retr_tokens(query)
+        scored: list[tuple[float, int]] = []
+        for i, toks in enumerate(self.tokenized):
+            if not toks:
+                continue
+            tf: dict[str, int] = {}
+            for t in toks:
+                tf[t] = tf.get(t, 0) + 1
+            dl = len(toks)
+            score = 0.0
+            for t in q:
+                f = tf.get(t)
+                if not f:
+                    continue
+                idf = self.idf.get(t, 0.0)
+                score += idf * (f * (self.k1 + 1)) / (
+                    f + self.k1 * (1 - self.b + self.b * dl / (self.avgdl or 1)))
+            if score > 0:
+                scored.append((score, i))
+        scored.sort(reverse=True)
+        return [self.docs[i] for _, i in scored[:top_k]]
+
+
+class DenseRetriever:
+    """Optional dense (embedding) retriever via sentence-transformers.
+
+    Used only when ``backend='dense'`` and the dependency is installed; otherwise
+    the harness falls back to BM25 so the default install stays light.
+    """
+
+    backend = "dense"
+
+    def __init__(self, docs: list[str], model_name: str = "all-MiniLM-L6-v2"):
+        from sentence_transformers import SentenceTransformer  # lazy
+        import numpy as np
+
+        self._np = np
+        self.docs = docs
+        self.model = SentenceTransformer(model_name)
+        self.emb = self.model.encode(
+            docs or [""], normalize_embeddings=True, convert_to_numpy=True)
+
+    def retrieve(self, query: str, top_k: int = 5) -> list[str]:
+        if not self.docs:
+            return []
+        q = self.model.encode([query], normalize_embeddings=True, convert_to_numpy=True)[0]
+        sims = self.emb @ q
+        idx = self._np.argsort(-sims)[:top_k]
+        return [self.docs[i] for i in idx]
+
+
+def _chunk_case(case, granularity: str = "turn") -> list[str]:
+    """Turn the conversation into retrievable text chunks."""
+    msgs = case.messages
+    if granularity == "turn":
+        return [m["content"] for m in msgs if m.get("content")]
+    # session: group consecutive turns until a new "[Session" header appears
+    chunks, cur = [], []
+    for m in msgs:
+        c = m.get("content", "")
+        if c.startswith("[Session") and cur:
+            chunks.append("\n".join(cur))
+            cur = []
+        cur.append(c)
+    if cur:
+        chunks.append("\n".join(cur))
+    return chunks
+
+
+def build_retriever(case, backend: str = "bm25", granularity: str = "turn"):
+    """Build a retriever over a conversation. Falls back to BM25 if the dense
+    backend is requested but unavailable."""
+    docs = _chunk_case(case, granularity)
+    if backend == "dense":
+        try:
+            return DenseRetriever(docs)
+        except Exception:
+            return BM25Retriever(docs)
+    return BM25Retriever(docs)
+
+
+class RetrievalRAG(Strategy):
+    """Retrieval-augmented baseline: fetch the top-k most relevant past turns for
+    the query and inject them alongside the recent window."""
+
+    name = "rag"
+
+    def __init__(self, recent_k: int = 6, retriever=None, top_k: int = 5):
+        self.recent_k = recent_k
+        self.retriever = retriever
+        self.top_k = top_k
+
+    def build_context(self, history, query):
+        chunks = self.retriever.retrieve(query, self.top_k) if self.retriever else []
+        mem = "\n".join(f"- {c}" for c in chunks) or "(none)"
+        system = (SYNTH_SYSTEM_BASE
+                  + "\n\nRetrieved relevant memory (top matches for this query):\n" + mem)
+        msgs = history[-self.recent_k:] + [{"role": "user", "content": query}]
+        return system, msgs
+
+
+class SlotRAGHybrid(Strategy):
+    """Hybrid memory: structured latest-value slots for durable facts PLUS
+    retrieved narrative turns for everything the slots do not capture."""
+
+    name = "slot_rag_hybrid"
+
+    def __init__(self, recent_k: int = 6, store: Optional[SlotMemoryStore] = None,
+                 retriever=None, top_k: int = 5, max_slots: int = 24):
+        self.recent_k = recent_k
+        self.store = store if store is not None else SlotMemoryStore()
+        self.retriever = retriever
+        self.top_k = top_k
+        self.max_slots = max_slots
+
+    def build_context(self, history, query):
+        slots = self.store.render(query=query, max_slots=self.max_slots) or "(none)"
+        chunks = self.retriever.retrieve(query, self.top_k) if self.retriever else []
+        mem = "\n".join(f"- {c}" for c in chunks) or "(none)"
+        system = (SYNTH_SYSTEM_BASE
+                  + "\n\nCurrent structured fact slots (latest values only):\n" + slots
+                  + "\n\nRetrieved relevant turns:\n" + mem)
         msgs = history[-self.recent_k:] + [{"role": "user", "content": query}]
         return system, msgs
 
