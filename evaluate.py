@@ -48,6 +48,7 @@ from hierarchical_memory import (
     FullContext, Truncation, RunningSummary, Hierarchical, SlotMemory, SlotMemoryStore,
     RetrievalRAG, SlotRAGHybrid, build_retriever,
     EXTRACT_SYSTEM, SLOT_EXTRACT_SYSTEM, _safe_json,
+    BudgetExhaustedError,
 )
 from token_utils import (
     cost_usd, price_for, reduction_pct, fraction_of_baseline_pct,
@@ -317,6 +318,10 @@ def run_qa(synth_client, case: Case, synth_model: str, notes: NotesFile, summary
             try:
                 c = synth_client.complete(synth_model, system, msgs, max_tokens=160)
                 errored = False
+            except BudgetExhaustedError:
+                # Not a model failure -- a hard quota wall. Propagate so the run
+                # stops and checkpoints instead of scoring this as a wrong answer.
+                raise
             except Exception as e:
                 # A hard failure (e.g., 413 request-too-large for full context on a
                 # rate-limited tier) is recorded as an incorrect answer for THIS
@@ -618,6 +623,16 @@ def main():
                                  slot_store=slot_store, retriever=retriever,
                                  judge_client=judge_client, judge_model=judge_model,
                                  use_judge=use_judge)
+        except BudgetExhaustedError as e:
+            # Hard daily-token wall: stop now. Cases completed so far are already
+            # checkpointed to --out; rerun the same command with --resume once the
+            # quota refreshes to continue from exactly here.
+            print(f"\n  == STOPPING: {e}\n"
+                  f"  == {len(case_rows)} cases checkpointed to {args.out} "
+                  f"({len(case_rows) - len(completed_ids)} new this session).\n"
+                  f"  == Re-run the same command with --resume once token quota refreshes.",
+                  file=sys.stderr)
+            break
         except Exception as e:
             print(f"  !! case {case.id} failed ({type(e).__name__}: {str(e)[:80]}); skipping",
                   file=sys.stderr)

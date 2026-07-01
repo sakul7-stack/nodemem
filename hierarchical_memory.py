@@ -119,6 +119,38 @@ class LLMClient:
         )
 
 
+class BudgetExhaustedError(RuntimeError):
+    """Raised when every key is rate-limited for longer than a single call is
+    willing to wait -- typically a hard daily-token (TPD) cap rather than a
+    transient per-minute throttle. Signals the harness to checkpoint and stop
+    cleanly so the run can be continued later with ``--resume`` once quota
+    refreshes, instead of hanging forever or recording quota failures as wrong
+    answers (which would corrupt retention numbers)."""
+
+
+def _retry_after_s(exc, default: float) -> float:
+    """Best-effort extraction of a Retry-After delay (seconds) from a 429.
+
+    Groq returns either a ``Retry-After`` header (seconds) or, sometimes, only
+    an error body like ``... try again in 8.5s``. Fall back to ``default`` when
+    neither is parseable. A small margin is added so we don't wake up a hair
+    before the quota window actually rolls over.
+    """
+    try:
+        resp = getattr(exc, "response", None)
+        headers = getattr(resp, "headers", None) or {}
+        ra = headers.get("retry-after") or headers.get("Retry-After")
+        if ra is not None:
+            return float(ra) + 0.5
+        msg = str(getattr(exc, "message", "") or exc)
+        m = re.search(r"try again in ([\d.]+)s", msg)
+        if m:
+            return float(m.group(1)) + 0.5
+    except (ValueError, TypeError, AttributeError):
+        pass
+    return default
+
+
 class OpenAICompatClient:
     """OpenAI-compatible backend (e.g. Groq) exposing the same ``complete``
     interface and ``Completion`` shape as ``LLMClient``.
@@ -128,8 +160,8 @@ class OpenAICompatClient:
     """
 
     def __init__(self, api_key: Optional[str] = None, base_url: Optional[str] = None,
-                 min_interval_s: float = 0.0, max_retries: int = 1,
-                 api_keys: Optional[list[str]] = None, timeout_s: float = 90.0):
+                 min_interval_s: float = 0.0, max_retries: int = 0,
+                 api_keys: Optional[list[str]] = None, timeout_s: float = 30.0):
         from openai import OpenAI
 
         key_candidates: list[str] = []
@@ -162,6 +194,19 @@ class OpenAICompatClient:
         self._client_index = 0
         self._min_interval = min_interval_s
         self._last_call = 0.0
+        # Per-key cooldown: after a key returns 429, we skip it until this wall
+        # clock time. On the Groq free tier the 70B-class judge models are
+        # capped near ~1 RPM per key, so hammering a just-throttled key every
+        # 0.2s guarantees it stays 429'd. Parking it for a cooldown window lets
+        # the key's quota actually recover, turning aggregate throughput from
+        # ~0 into ~(num_keys / cooldown) RPM.
+        self._cooldown_s = float(os.environ.get("GROQ_KEY_COOLDOWN_S", "12"))
+        self._key_ready_at = [0.0] * len(self._clients)
+        # Give up a single call after this many seconds of every key being
+        # throttled -- distinguishes a transient per-minute throttle (worth
+        # waiting out) from a hard daily-token exhaustion (raise and let the
+        # harness checkpoint + stop for --resume). 0 disables the deadline.
+        self._call_deadline_s = float(os.environ.get("GROQ_CALL_DEADLINE_S", "300"))
 
     @property
     def raw(self):
@@ -180,12 +225,33 @@ class OpenAICompatClient:
 
         oai_msgs = ([{"role": "system", "content": system}] if system else []) + messages
         max_attempts = 10000
+        call_start = time.time()
         for attempt in range(max_attempts):
-            t0 = time.time()
             nc = len(self._clients)
-            idx = self._client_index % nc
+            # Round-robin from the current cursor, but skip keys still cooling
+            # down from a recent 429. Pick the first ready key; if none are
+            # ready, sleep until the soonest one is (never busy-spin).
+            now = time.time()
+            idx = None
+            for step in range(nc):
+                cand = (self._client_index + step) % nc
+                if self._key_ready_at[cand] <= now:
+                    idx = cand
+                    break
+            if idx is None:
+                # Every key is throttled. If we've been stuck past the deadline,
+                # this is almost certainly a hard daily cap, not a transient
+                # blip: stop so the harness can checkpoint and resume later.
+                if self._call_deadline_s and (now - call_start) > self._call_deadline_s:
+                    raise BudgetExhaustedError(
+                        f"all {nc} keys rate-limited for >{self._call_deadline_s:.0f}s "
+                        f"(model={model}); likely daily-token exhaustion")
+                soonest = min(self._key_ready_at)
+                time.sleep(max(0.05, min(soonest - now, self._call_deadline_s or 1e9)))
+                continue
             self._client_index = (idx + 1) % nc
             client = self._clients[idx]
+            t0 = time.time()
             try:
                 resp = client.chat.completions.create(
                     model=model, max_tokens=max_tokens, messages=oai_msgs)
@@ -194,10 +260,14 @@ class OpenAICompatClient:
                 if len(self._clients) <= 1:
                     raise
                 self._clients.pop(idx)
+                self._key_ready_at.pop(idx)
                 self._client_index = self._client_index % len(self._clients)
                 time.sleep(0.5)
-            except openai.RateLimitError:
-                time.sleep(0.2)
+            except openai.RateLimitError as e:
+                # Park this key so its quota recovers instead of re-hitting it
+                # on the next cycle. Prefer the server's Retry-After hint when
+                # present; otherwise fall back to the fixed cooldown window.
+                self._key_ready_at[idx] = time.time() + _retry_after_s(e, self._cooldown_s)
             except (openai.InternalServerError, openai.APITimeoutError, openai.APIConnectionError):
                 time.sleep(1)
         else:
