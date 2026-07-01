@@ -1,0 +1,1672 @@
+{
+  "config": {
+    "offline": false,
+    "provider": "nara",
+    "scale": "tiny",
+    "synth_provider": "nara",
+    "dataset": "locomo",
+    "judge": "llm",
+    "judge_model": "mistral-large",
+    "rag": true,
+    "rag_backend": "bm25",
+    "n_cases_requested": 10,
+    "n_cases_completed": 10,
+    "synth_model": "mistral-large",
+    "extract_model_called": "mimo-v2.5-free",
+    "extract_price_tier": "mimo-v2.5-free",
+    "recent_k": 6,
+    "truncate_k": 10,
+    "segment_size": 24,
+    "rag_top_k": 5,
+    "compact_notes": 0,
+    "slot_memory": true,
+    "token_counter": "tiktoken/cl100k (cumulative); provider usage (per-query real)",
+    "seed": null,
+    "elapsed_s": 1640.0,
+    "seeds": [
+      7
+    ],
+    "source_files": [
+      "results_nara_rerun.json"
+    ],
+    "aggregation_method": "pooled from run-level summary means/stds; ci95 is normal approximation for summary tables"
+  },
+  "strategies": {
+    "full_context": {
+      "category_counts": {
+        "adversarial": 11.0,
+        "multi_hop": 10.0,
+        "open_domain": 9.0,
+        "single_hop": 10.0,
+        "temporal": 10.0
+      },
+      "cost_pct_of_baseline": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 10
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 63.64,
+        "multi_hop": 40.0,
+        "open_domain": 55.56,
+        "single_hop": 90.0,
+        "temporal": 50.0
+      },
+      "retention_pct": {
+        "mean": 60.0,
+        "std": 25.3,
+        "ci95": [
+          44.32,
+          75.68
+        ],
+        "n": 10
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 10
+      },
+      "token_reduction_real_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 10
+      }
+    },
+    "hierarchical": {
+      "category_counts": {
+        "adversarial": 11.0,
+        "multi_hop": 10.0,
+        "open_domain": 9.0,
+        "single_hop": 10.0,
+        "temporal": 10.0
+      },
+      "cost_pct_of_baseline": {
+        "mean": 19.82,
+        "std": 1.6,
+        "ci95": [
+          18.83,
+          20.81
+        ],
+        "n": 10
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 72.73,
+        "multi_hop": 30.0,
+        "open_domain": 44.44,
+        "single_hop": 60.0,
+        "temporal": 30.0
+      },
+      "retention_pct": {
+        "mean": 48.0,
+        "std": 24.0,
+        "ci95": [
+          33.12,
+          62.88
+        ],
+        "n": 10
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 80.18,
+        "std": 1.6,
+        "ci95": [
+          79.19,
+          81.17
+        ],
+        "n": 10
+      },
+      "token_reduction_real_pct": {
+        "mean": 80.33,
+        "std": 1.92,
+        "ci95": [
+          79.14,
+          81.52
+        ],
+        "n": 10
+      }
+    },
+    "rag": {
+      "category_counts": {
+        "adversarial": 11.0,
+        "multi_hop": 10.0,
+        "open_domain": 9.0,
+        "single_hop": 10.0,
+        "temporal": 10.0
+      },
+      "cost_pct_of_baseline": {
+        "mean": 4.86,
+        "std": 1.13,
+        "ci95": [
+          4.16,
+          5.56
+        ],
+        "n": 10
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 63.64,
+        "multi_hop": 10.0,
+        "open_domain": 55.56,
+        "single_hop": 60.0,
+        "temporal": 30.0
+      },
+      "retention_pct": {
+        "mean": 44.0,
+        "std": 24.98,
+        "ci95": [
+          28.52,
+          59.48
+        ],
+        "n": 10
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 95.14,
+        "std": 1.13,
+        "ci95": [
+          94.44,
+          95.84
+        ],
+        "n": 10
+      },
+      "token_reduction_real_pct": {
+        "mean": 97.97,
+        "std": 0.39,
+        "ci95": [
+          97.73,
+          98.21
+        ],
+        "n": 10
+      }
+    },
+    "running_summary": {
+      "category_counts": {
+        "adversarial": 11.0,
+        "multi_hop": 10.0,
+        "open_domain": 9.0,
+        "single_hop": 10.0,
+        "temporal": 10.0
+      },
+      "cost_pct_of_baseline": {
+        "mean": 9.78,
+        "std": 2.03,
+        "ci95": [
+          8.52,
+          11.04
+        ],
+        "n": 10
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 72.73,
+        "multi_hop": 10.0,
+        "open_domain": 11.11,
+        "single_hop": 30.0,
+        "temporal": 0.0
+      },
+      "retention_pct": {
+        "mean": 26.0,
+        "std": 18.0,
+        "ci95": [
+          14.84,
+          37.16
+        ],
+        "n": 10
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 91.03,
+        "std": 1.84,
+        "ci95": [
+          89.89,
+          92.17
+        ],
+        "n": 10
+      },
+      "token_reduction_real_pct": {
+        "mean": 95.64,
+        "std": 0.86,
+        "ci95": [
+          95.11,
+          96.17
+        ],
+        "n": 10
+      }
+    },
+    "slot_memory": {
+      "category_counts": {
+        "adversarial": 11.0,
+        "multi_hop": 10.0,
+        "open_domain": 9.0,
+        "single_hop": 10.0,
+        "temporal": 10.0
+      },
+      "cost_pct_of_baseline": {
+        "mean": 6.42,
+        "std": 1.24,
+        "ci95": [
+          5.65,
+          7.19
+        ],
+        "n": 10
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 90.91,
+        "multi_hop": 0.0,
+        "open_domain": 22.22,
+        "single_hop": 60.0,
+        "temporal": 10.0
+      },
+      "retention_pct": {
+        "mean": 38.0,
+        "std": 14.0,
+        "ci95": [
+          29.32,
+          46.68
+        ],
+        "n": 10
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 93.58,
+        "std": 1.24,
+        "ci95": [
+          92.81,
+          94.35
+        ],
+        "n": 10
+      },
+      "token_reduction_real_pct": {
+        "mean": 96.83,
+        "std": 0.58,
+        "ci95": [
+          96.47,
+          97.19
+        ],
+        "n": 10
+      }
+    },
+    "slot_rag_hybrid": {
+      "category_counts": {
+        "adversarial": 11.0,
+        "multi_hop": 10.0,
+        "open_domain": 9.0,
+        "single_hop": 10.0,
+        "temporal": 10.0
+      },
+      "cost_pct_of_baseline": {
+        "mean": 8.41,
+        "std": 1.71,
+        "ci95": [
+          7.35,
+          9.47
+        ],
+        "n": 10
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 63.64,
+        "multi_hop": 30.0,
+        "open_domain": 44.44,
+        "single_hop": 80.0,
+        "temporal": 40.0
+      },
+      "retention_pct": {
+        "mean": 52.0,
+        "std": 16.0,
+        "ci95": [
+          42.08,
+          61.92
+        ],
+        "n": 10
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 91.59,
+        "std": 1.71,
+        "ci95": [
+          90.53,
+          92.65
+        ],
+        "n": 10
+      },
+      "token_reduction_real_pct": {
+        "mean": 95.91,
+        "std": 0.81,
+        "ci95": [
+          95.41,
+          96.41
+        ],
+        "n": 10
+      }
+    },
+    "truncation": {
+      "category_counts": {
+        "adversarial": 11.0,
+        "multi_hop": 10.0,
+        "open_domain": 9.0,
+        "single_hop": 10.0,
+        "temporal": 10.0
+      },
+      "cost_pct_of_baseline": {
+        "mean": 4.21,
+        "std": 0.94,
+        "ci95": [
+          3.63,
+          4.79
+        ],
+        "n": 10
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 100.0,
+        "multi_hop": 0.0,
+        "open_domain": 22.22,
+        "single_hop": 0.0,
+        "temporal": 0.0
+      },
+      "retention_pct": {
+        "mean": 26.0,
+        "std": 9.17,
+        "ci95": [
+          20.32,
+          31.68
+        ],
+        "n": 10
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 95.79,
+        "std": 0.94,
+        "ci95": [
+          95.21,
+          96.37
+        ],
+        "n": 10
+      },
+      "token_reduction_real_pct": {
+        "mean": 98.14,
+        "std": 0.35,
+        "ci95": [
+          97.92,
+          98.36
+        ],
+        "n": 10
+      }
+    }
+  },
+  "cost_breakdown_usd": {
+    "extractor_total_actual_price": 0.0,
+    "extractor_total_cascade_price": 0.0,
+    "summary_maintenance_total": 0.494824
+  },
+  "latency_s": {
+    "extractor_call": {
+      "mean": 25.92,
+      "std": 8.1,
+      "ci95": [
+        23.63,
+        28.21
+      ],
+      "n": 48
+    },
+    "full_response": {
+      "mean": 5.33,
+      "std": 0.81,
+      "ci95": [
+        4.83,
+        5.83
+      ],
+      "n": 10
+    },
+    "hier_response": {
+      "mean": 2.87,
+      "std": 0.67,
+      "ci95": [
+        2.45,
+        3.29
+      ],
+      "n": 10
+    },
+    "overhead_mean": -2.46
+  },
+  "aggregation_note": "Run-level summaries were pooled from independent seeds. Means and standard deviations are reconstructed from rounded summary statistics, so summary-table values may differ slightly from an aggregation over raw per-case observations.",
+  "case_metrics": [
+    {
+      "case_id": "conv-26",
+      "domain": "locomo",
+      "length_class": "419msg",
+      "n_messages": 419,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 89281,
+          "cumulative_input_tokens": 1823256,
+          "cost_usd": 3.646512,
+          "latency_s": 4.418244
+        },
+        "truncation": {
+          "token_reduction_real_pct": 97.445145,
+          "token_reduction_cumulative_pct": 94.403967,
+          "cost_pct_of_baseline": 5.596033,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2281,
+          "cumulative_input_tokens": 102030,
+          "cost_usd": 0.20406,
+          "latency_s": 1.775086
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 94.611395,
+          "token_reduction_cumulative_pct": 88.919713,
+          "cost_pct_of_baseline": 12.176622,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4811,
+          "cumulative_input_tokens": 202022,
+          "cost_usd": 0.444022,
+          "latency_s": 2.532585
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 83.875629,
+          "token_reduction_cumulative_pct": 82.197837,
+          "cost_pct_of_baseline": 17.802163,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 14396,
+          "cumulative_input_tokens": 324579,
+          "cost_usd": 0.649158,
+          "latency_s": 2.2841
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 95.882663,
+          "token_reduction_cumulative_pct": 91.959824,
+          "cost_pct_of_baseline": 8.040176,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 3676,
+          "cumulative_input_tokens": 146593,
+          "cost_usd": 0.293186,
+          "latency_s": 1.962727
+        },
+        "rag": {
+          "token_reduction_real_pct": 97.405943,
+          "token_reduction_cumulative_pct": 93.489779,
+          "cost_pct_of_baseline": 6.510221,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2316,
+          "cumulative_input_tokens": 118698,
+          "cost_usd": 0.237396,
+          "latency_s": 2.465333
+        },
+        "slot_rag_hybrid": {
+          "token_reduction_real_pct": 94.773804,
+          "token_reduction_cumulative_pct": 89.249891,
+          "cost_pct_of_baseline": 10.750109,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4666,
+          "cumulative_input_tokens": 196002,
+          "cost_usd": 0.392004,
+          "latency_s": 2.57905
+        }
+      },
+      "source_file": "results_nara_rerun.json",
+      "seed": 7
+    },
+    {
+      "case_id": "conv-30",
+      "domain": "locomo",
+      "length_class": "369msg",
+      "n_messages": 369,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 68329,
+          "cumulative_input_tokens": 1276576,
+          "cost_usd": 2.553152,
+          "latency_s": 4.262101
+        },
+        "truncation": {
+          "token_reduction_real_pct": 97.608629,
+          "token_reduction_cumulative_pct": 93.757442,
+          "cost_pct_of_baseline": 6.242558,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1634,
+          "cumulative_input_tokens": 79691,
+          "cost_usd": 0.159382,
+          "latency_s": 1.800913
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 93.562031,
+          "token_reduction_cumulative_pct": 86.725506,
+          "cost_pct_of_baseline": 14.52581,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4399,
+          "cumulative_input_tokens": 169459,
+          "cost_usd": 0.370866,
+          "latency_s": 2.125831
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 79.109895,
+          "token_reduction_cumulative_pct": 79.221449,
+          "cost_pct_of_baseline": 20.778551,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 14274,
+          "cumulative_input_tokens": 265254,
+          "cost_usd": 0.530508,
+          "latency_s": 2.23893
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 95.553864,
+          "token_reduction_cumulative_pct": 90.839558,
+          "cost_pct_of_baseline": 9.160442,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 3038,
+          "cumulative_input_tokens": 116940,
+          "cost_usd": 0.23388,
+          "latency_s": 1.902303
+        },
+        "rag": {
+          "token_reduction_real_pct": 97.160796,
+          "token_reduction_cumulative_pct": 92.734158,
+          "cost_pct_of_baseline": 7.265842,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1940,
+          "cumulative_input_tokens": 92754,
+          "cost_usd": 0.185508,
+          "latency_s": 2.135668
+        },
+        "slot_rag_hybrid": {
+          "token_reduction_real_pct": 94.052306,
+          "token_reduction_cumulative_pct": 87.836212,
+          "cost_pct_of_baseline": 12.163788,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4064,
+          "cumulative_input_tokens": 155280,
+          "cost_usd": 0.31056,
+          "latency_s": 2.301348
+        }
+      },
+      "source_file": "results_nara_rerun.json",
+      "seed": 7
+    },
+    {
+      "case_id": "conv-41",
+      "domain": "locomo",
+      "length_class": "663msg",
+      "n_messages": 663,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 129674,
+          "cumulative_input_tokens": 4365299,
+          "cost_usd": 8.730598,
+          "latency_s": 5.072355
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.288786,
+          "token_reduction_cumulative_pct": 96.470643,
+          "cost_pct_of_baseline": 3.529357,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2219,
+          "cumulative_input_tokens": 154067,
+          "cost_usd": 0.308134,
+          "latency_s": 1.696901
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 96.237488,
+          "token_reduction_cumulative_pct": 92.595627,
+          "cost_pct_of_baseline": 8.062403,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4879,
+          "cumulative_input_tokens": 323223,
+          "cost_usd": 0.703896,
+          "latency_s": 2.285593
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 81.338588,
+          "token_reduction_cumulative_pct": 81.914824,
+          "cost_pct_of_baseline": 18.085176,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 24199,
+          "cumulative_input_tokens": 789472,
+          "cost_usd": 1.578944,
+          "latency_s": 2.726608
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 97.186791,
+          "token_reduction_cumulative_pct": 94.72886,
+          "cost_pct_of_baseline": 5.27114,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 3648,
+          "cumulative_input_tokens": 230101,
+          "cost_usd": 0.460202,
+          "latency_s": 1.852915
+        },
+        "rag": {
+          "token_reduction_real_pct": 98.180823,
+          "token_reduction_cumulative_pct": 95.906649,
+          "cost_pct_of_baseline": 4.093351,
+          "retention_pct": 0.0,
+          "fact_update_retention_pct": null,
+          "correct": 0,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2359,
+          "cumulative_input_tokens": 178687,
+          "cost_usd": 0.357374,
+          "latency_s": 2.164332
+        },
+        "slot_rag_hybrid": {
+          "token_reduction_real_pct": 96.442618,
+          "token_reduction_cumulative_pct": 93.03798,
+          "cost_pct_of_baseline": 6.96202,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4613,
+          "cumulative_input_tokens": 303913,
+          "cost_usd": 0.607826,
+          "latency_s": 2.035614
+        }
+      },
+      "source_file": "results_nara_rerun.json",
+      "seed": 7
+    },
+    {
+      "case_id": "conv-42",
+      "domain": "locomo",
+      "length_class": "629msg",
+      "n_messages": 629,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 113568,
+          "cumulative_input_tokens": 3287073,
+          "cost_usd": 6.574146,
+          "latency_s": 6.834391
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.068998,
+          "token_reduction_cumulative_pct": 96.048551,
+          "cost_pct_of_baseline": 3.951449,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2193,
+          "cumulative_input_tokens": 129887,
+          "cost_usd": 0.259774,
+          "latency_s": 1.967788
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 95.889687,
+          "token_reduction_cumulative_pct": 91.382029,
+          "cost_pct_of_baseline": 9.374541,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4668,
+          "cumulative_input_tokens": 283279,
+          "cost_usd": 0.616296,
+          "latency_s": 2.396505
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 78.521238,
+          "token_reduction_cumulative_pct": 77.862007,
+          "cost_pct_of_baseline": 22.137993,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 24393,
+          "cumulative_input_tokens": 727692,
+          "cost_usd": 1.455384,
+          "latency_s": 2.598011
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 96.966575,
+          "token_reduction_cumulative_pct": 93.727885,
+          "cost_pct_of_baseline": 6.272115,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 3445,
+          "cumulative_input_tokens": 206169,
+          "cost_usd": 0.412338,
+          "latency_s": 1.994559
+        },
+        "rag": {
+          "token_reduction_real_pct": 98.278564,
+          "token_reduction_cumulative_pct": 95.499857,
+          "cost_pct_of_baseline": 4.500143,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1955,
+          "cumulative_input_tokens": 147923,
+          "cost_usd": 0.295846,
+          "latency_s": 2.359202
+        },
+        "slot_rag_hybrid": {
+          "token_reduction_real_pct": 96.286806,
+          "token_reduction_cumulative_pct": 91.930237,
+          "cost_pct_of_baseline": 8.069763,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4217,
+          "cumulative_input_tokens": 265259,
+          "cost_usd": 0.530518,
+          "latency_s": 2.385069
+        }
+      },
+      "source_file": "results_nara_rerun.json",
+      "seed": 7
+    },
+    {
+      "case_id": "conv-43",
+      "domain": "locomo",
+      "length_class": "680msg",
+      "n_messages": 680,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 130225,
+          "cumulative_input_tokens": 4515086,
+          "cost_usd": 9.030172,
+          "latency_s": 6.515788
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.448839,
+          "token_reduction_cumulative_pct": 96.588348,
+          "cost_pct_of_baseline": 3.411652,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2020,
+          "cumulative_input_tokens": 154039,
+          "cost_usd": 0.308078,
+          "latency_s": 1.920202
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 96.40238,
+          "token_reduction_cumulative_pct": 92.744324,
+          "cost_pct_of_baseline": 7.8946,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4685,
+          "cumulative_input_tokens": 327600,
+          "cost_usd": 0.712896,
+          "latency_s": 2.012863
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 81.63947,
+          "token_reduction_cumulative_pct": 82.312984,
+          "cost_pct_of_baseline": 17.687016,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 23910,
+          "cumulative_input_tokens": 798584,
+          "cost_usd": 1.597168,
+          "latency_s": 2.997571
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 97.412939,
+          "token_reduction_cumulative_pct": 94.819722,
+          "cost_pct_of_baseline": 5.180278,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 3369,
+          "cumulative_input_tokens": 233894,
+          "cost_usd": 0.467788,
+          "latency_s": 2.124827
+        },
+        "rag": {
+          "token_reduction_real_pct": 98.237666,
+          "token_reduction_cumulative_pct": 96.157925,
+          "cost_pct_of_baseline": 3.842075,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2295,
+          "cumulative_input_tokens": 173473,
+          "cost_usd": 0.346946,
+          "latency_s": 2.000782
+        },
+        "slot_rag_hybrid": {
+          "token_reduction_real_pct": 96.572087,
+          "token_reduction_cumulative_pct": 93.292021,
+          "cost_pct_of_baseline": 6.707979,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4464,
+          "cumulative_input_tokens": 302871,
+          "cost_usd": 0.605742,
+          "latency_s": 2.218546
+        }
+      },
+      "source_file": "results_nara_rerun.json",
+      "seed": 7
+    },
+    {
+      "case_id": "conv-44",
+      "domain": "locomo",
+      "length_class": "675msg",
+      "n_messages": 675,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 129914,
+          "cumulative_input_tokens": 4147615,
+          "cost_usd": 8.29523,
+          "latency_s": 5.922744
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.087966,
+          "token_reduction_cumulative_pct": 96.416181,
+          "cost_pct_of_baseline": 3.583819,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2484,
+          "cumulative_input_tokens": 148643,
+          "cost_usd": 0.297286,
+          "latency_s": 2.100184
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 96.175162,
+          "token_reduction_cumulative_pct": 92.308592,
+          "cost_pct_of_baseline": 8.369557,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4969,
+          "cumulative_input_tokens": 319010,
+          "cost_usd": 0.694274,
+          "latency_s": 2.161518
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 80.287729,
+          "token_reduction_cumulative_pct": 80.879035,
+          "cost_pct_of_baseline": 19.120965,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 25609,
+          "cumulative_input_tokens": 793064,
+          "cost_usd": 1.586128,
+          "latency_s": 2.868237
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 97.114245,
+          "token_reduction_cumulative_pct": 94.426098,
+          "cost_pct_of_baseline": 5.573902,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 3749,
+          "cumulative_input_tokens": 231184,
+          "cost_usd": 0.462368,
+          "latency_s": 2.687996
+        },
+        "rag": {
+          "token_reduction_real_pct": 98.118755,
+          "token_reduction_cumulative_pct": 95.832858,
+          "cost_pct_of_baseline": 4.167142,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2444,
+          "cumulative_input_tokens": 172837,
+          "cost_usd": 0.345674,
+          "latency_s": 2.27765
+        },
+        "slot_rag_hybrid": {
+          "token_reduction_real_pct": 96.375294,
+          "token_reduction_cumulative_pct": 92.707785,
+          "cost_pct_of_baseline": 7.292215,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4709,
+          "cumulative_input_tokens": 302453,
+          "cost_usd": 0.604906,
+          "latency_s": 2.162281
+        }
+      },
+      "source_file": "results_nara_rerun.json",
+      "seed": 7
+    },
+    {
+      "case_id": "conv-47",
+      "domain": "locomo",
+      "length_class": "689msg",
+      "n_messages": 689,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 119558,
+          "cumulative_input_tokens": 4142356,
+          "cost_usd": 8.284712,
+          "latency_s": 5.369013
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.567223,
+          "token_reduction_cumulative_pct": 96.576924,
+          "cost_pct_of_baseline": 3.423076,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1713,
+          "cumulative_input_tokens": 141796,
+          "cost_usd": 0.283592,
+          "latency_s": 2.15774
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 96.191806,
+          "token_reduction_cumulative_pct": 92.241782,
+          "cost_pct_of_baseline": 8.403623,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4553,
+          "cumulative_input_tokens": 321373,
+          "cost_usd": 0.696216,
+          "latency_s": 2.927675
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 77.134111,
+          "token_reduction_cumulative_pct": 78.190865,
+          "cost_pct_of_baseline": 21.809135,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 27338,
+          "cumulative_input_tokens": 903412,
+          "cost_usd": 1.806824,
+          "latency_s": 3.120182
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 97.253216,
+          "token_reduction_cumulative_pct": 94.401205,
+          "cost_pct_of_baseline": 5.598795,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 3284,
+          "cumulative_input_tokens": 231922,
+          "cost_usd": 0.463844,
+          "latency_s": 2.393441
+        },
+        "rag": {
+          "token_reduction_real_pct": 98.397431,
+          "token_reduction_cumulative_pct": 96.103232,
+          "cost_pct_of_baseline": 3.896768,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1916,
+          "cumulative_input_tokens": 161418,
+          "cost_usd": 0.322836,
+          "latency_s": 4.422741
+        },
+        "slot_rag_hybrid": {
+          "token_reduction_real_pct": 96.543937,
+          "token_reduction_cumulative_pct": 92.845014,
+          "cost_pct_of_baseline": 7.154986,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4132,
+          "cumulative_input_tokens": 296385,
+          "cost_usd": 0.59277,
+          "latency_s": 5.279752
+        }
+      },
+      "source_file": "results_nara_rerun.json",
+      "seed": 7
+    },
+    {
+      "case_id": "conv-48",
+      "domain": "locomo",
+      "length_class": "681msg",
+      "n_messages": 681,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 118378,
+          "cumulative_input_tokens": 3945235,
+          "cost_usd": 7.89047,
+          "latency_s": 5.106969
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.476913,
+          "token_reduction_cumulative_pct": 96.478131,
+          "cost_pct_of_baseline": 3.521869,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1803,
+          "cumulative_input_tokens": 138946,
+          "cost_usd": 0.277892,
+          "latency_s": 2.233621
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 96.018686,
+          "token_reduction_cumulative_pct": 91.722521,
+          "cost_pct_of_baseline": 8.932142,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4713,
+          "cumulative_input_tokens": 326566,
+          "cost_usd": 0.704788,
+          "latency_s": 2.229094
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 78.933586,
+          "token_reduction_cumulative_pct": 78.784939,
+          "cost_pct_of_baseline": 21.215061,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 24938,
+          "cumulative_input_tokens": 836984,
+          "cost_usd": 1.673968,
+          "latency_s": 4.697182
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 97.009579,
+          "token_reduction_cumulative_pct": 93.977621,
+          "cost_pct_of_baseline": 6.022379,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 3540,
+          "cumulative_input_tokens": 237597,
+          "cost_usd": 0.475194,
+          "latency_s": 2.153496
+        },
+        "rag": {
+          "token_reduction_real_pct": 98.228556,
+          "token_reduction_cumulative_pct": 95.959252,
+          "cost_pct_of_baseline": 4.040748,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2097,
+          "cumulative_input_tokens": 159417,
+          "cost_usd": 0.318834,
+          "latency_s": 1.761151
+        },
+        "slot_rag_hybrid": {
+          "token_reduction_real_pct": 96.27549,
+          "token_reduction_cumulative_pct": 92.343574,
+          "cost_pct_of_baseline": 7.656426,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4409,
+          "cumulative_input_tokens": 302064,
+          "cost_usd": 0.604128,
+          "latency_s": 2.032206
+        }
+      },
+      "source_file": "results_nara_rerun.json",
+      "seed": 7
+    },
+    {
+      "case_id": "conv-49",
+      "domain": "locomo",
+      "length_class": "509msg",
+      "n_messages": 509,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 96449,
+          "cumulative_input_tokens": 2429262,
+          "cost_usd": 4.858524,
+          "latency_s": 4.809027
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.057004,
+          "token_reduction_cumulative_pct": 95.356985,
+          "cost_pct_of_baseline": 4.643015,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1874,
+          "cumulative_input_tokens": 112791,
+          "cost_usd": 0.225582,
+          "latency_s": 3.976287
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 95.293886,
+          "token_reduction_cumulative_pct": 89.931016,
+          "cost_pct_of_baseline": 10.961395,
+          "retention_pct": 0.0,
+          "fact_update_retention_pct": null,
+          "correct": 0,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4539,
+          "cumulative_input_tokens": 244602,
+          "cost_usd": 0.532562,
+          "latency_s": 2.919378
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 80.063038,
+          "token_reduction_cumulative_pct": 79.395882,
+          "cost_pct_of_baseline": 20.604118,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 19229,
+          "cumulative_input_tokens": 500528,
+          "cost_usd": 1.001056,
+          "latency_s": 2.68757
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 96.747504,
+          "token_reduction_cumulative_pct": 92.885041,
+          "cost_pct_of_baseline": 7.114959,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 3137,
+          "cumulative_input_tokens": 172841,
+          "cost_usd": 0.345682,
+          "latency_s": 2.862108
+        },
+        "rag": {
+          "token_reduction_real_pct": 97.757364,
+          "token_reduction_cumulative_pct": 94.516977,
+          "cost_pct_of_baseline": 5.483023,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2163,
+          "cumulative_input_tokens": 133197,
+          "cost_usd": 0.266394,
+          "latency_s": 2.581337
+        },
+        "slot_rag_hybrid": {
+          "token_reduction_real_pct": 95.597673,
+          "token_reduction_cumulative_pct": 90.580678,
+          "cost_pct_of_baseline": 9.419322,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4246,
+          "cumulative_input_tokens": 228820,
+          "cost_usd": 0.45764,
+          "latency_s": 2.436675
+        }
+      },
+      "source_file": "results_nara_rerun.json",
+      "seed": 7
+    },
+    {
+      "case_id": "conv-50",
+      "domain": "locomo",
+      "length_class": "568msg",
+      "n_messages": 568,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 121054,
+          "cumulative_input_tokens": 3350016,
+          "cost_usd": 6.700032,
+          "latency_s": 4.951608
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.307367,
+          "token_reduction_cumulative_pct": 95.827811,
+          "cost_pct_of_baseline": 4.172189,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2049,
+          "cumulative_input_tokens": 139769,
+          "cost_usd": 0.279538,
+          "latency_s": 1.680245
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 95.981958,
+          "token_reduction_cumulative_pct": 91.699204,
+          "cost_pct_of_baseline": 9.095957,
+          "retention_pct": 0.0,
+          "fact_update_retention_pct": null,
+          "correct": 0,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4864,
+          "cumulative_input_tokens": 278078,
+          "cost_usd": 0.609432,
+          "latency_s": 1.833016
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 82.426025,
+          "token_reduction_cumulative_pct": 81.008001,
+          "cost_pct_of_baseline": 18.991999,
+          "retention_pct": 0.0,
+          "fact_update_retention_pct": null,
+          "correct": 0,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 21274,
+          "cumulative_input_tokens": 636235,
+          "cost_usd": 1.27247,
+          "latency_s": 2.455214
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 97.142598,
+          "token_reduction_cumulative_pct": 94.049402,
+          "cost_pct_of_baseline": 5.950598,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 3459,
+          "cumulative_input_tokens": 199346,
+          "cost_usd": 0.398692,
+          "latency_s": 2.122547
+        },
+        "rag": {
+          "token_reduction_real_pct": 97.904241,
+          "token_reduction_cumulative_pct": 95.224262,
+          "cost_pct_of_baseline": 4.775738,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2537,
+          "cumulative_input_tokens": 159988,
+          "cost_usd": 0.319976,
+          "latency_s": 2.115143
+        },
+        "slot_rag_hybrid": {
+          "token_reduction_real_pct": 96.186,
+          "token_reduction_cumulative_pct": 92.093889,
+          "cost_pct_of_baseline": 7.906111,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4617,
+          "cumulative_input_tokens": 264856,
+          "cost_usd": 0.529712,
+          "latency_s": 1.976115
+        }
+      },
+      "source_file": "results_nara_rerun.json",
+      "seed": 7
+    }
+  ],
+  "case_metrics_note": "Raw per-case rows were preserved from source files; use scripts/paired_analysis.py for paired tests."
+}

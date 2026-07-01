@@ -1,0 +1,213 @@
+{
+  "config": {
+    "offline": false,
+    "provider": "nara",
+    "scale": "tiny",
+    "synth_provider": "nara",
+    "dataset": "locomo",
+    "judge": "llm",
+    "judge_model": "mistral-large",
+    "rag": true,
+    "rag_backend": "bm25",
+    "n_cases_requested": 10,
+    "n_cases_completed": 10,
+    "synth_model": "mistral-large",
+    "extract_model_called": "mimo-v2.5-free",
+    "extract_price_tier": "mimo-v2.5-free",
+    "recent_k": 6,
+    "truncate_k": 10,
+    "segment_size": 24,
+    "rag_top_k": 5,
+    "compact_notes": 0,
+    "slot_memory": true,
+    "token_counter": "tiktoken/cl100k (cumulative); provider usage (per-query real)",
+    "seed": 7,
+    "elapsed_s": 1640.0
+  },
+  "method": "slot_memory",
+  "level": "question",
+  "interpretation": "paired_diff = slot_memory - baseline; negative cost is better, positive retention/token-reduction is better",
+  "n_questions": 50,
+  "comparisons": {
+    "full_context": {
+      "overall": {
+        "retention_diff": {
+          "paired_diff_mean": -0.22,
+          "ci95_bootstrap": [
+            -0.4,
+            -0.06
+          ],
+          "n_pairs": 50,
+          "sign_test_p_two_sided": 0.026604
+        }
+      },
+      "by_category": {
+        "adversarial": {
+          "paired_diff_mean": 0.2727,
+          "ci95_bootstrap": [
+            0.0,
+            0.5455
+          ],
+          "n_pairs": 11,
+          "sign_test_p_two_sided": 0.25
+        },
+        "multi_hop": {
+          "paired_diff_mean": -0.4,
+          "ci95_bootstrap": [
+            -0.7,
+            -0.1
+          ],
+          "n_pairs": 10,
+          "sign_test_p_two_sided": 0.125
+        },
+        "open_domain": {
+          "paired_diff_mean": -0.3333,
+          "ci95_bootstrap": [
+            -0.6667,
+            0.0
+          ],
+          "n_pairs": 9,
+          "sign_test_p_two_sided": 0.25
+        },
+        "single_hop": {
+          "paired_diff_mean": -0.3,
+          "ci95_bootstrap": [
+            -0.7,
+            0.1
+          ],
+          "n_pairs": 10,
+          "sign_test_p_two_sided": 0.375
+        },
+        "temporal": {
+          "paired_diff_mean": -0.4,
+          "ci95_bootstrap": [
+            -0.8,
+            0.0
+          ],
+          "n_pairs": 10,
+          "sign_test_p_two_sided": 0.21875
+        }
+      }
+    },
+    "truncation": {
+      "overall": {
+        "retention_diff": {
+          "paired_diff_mean": 0.12,
+          "ci95_bootstrap": [
+            0.0,
+            0.24
+          ],
+          "n_pairs": 50,
+          "sign_test_p_two_sided": 0.109375
+        }
+      },
+      "by_category": {
+        "adversarial": {
+          "paired_diff_mean": -0.0909,
+          "ci95_bootstrap": [
+            -0.2727,
+            0.0
+          ],
+          "n_pairs": 11,
+          "sign_test_p_two_sided": 1.0
+        },
+        "multi_hop": {
+          "paired_diff_mean": 0.0,
+          "ci95_bootstrap": [
+            0.0,
+            0.0
+          ],
+          "n_pairs": 10,
+          "sign_test_p_two_sided": null
+        },
+        "open_domain": {
+          "paired_diff_mean": 0.0,
+          "ci95_bootstrap": [
+            -0.3333,
+            0.3333
+          ],
+          "n_pairs": 9,
+          "sign_test_p_two_sided": 1.0
+        },
+        "single_hop": {
+          "paired_diff_mean": 0.6,
+          "ci95_bootstrap": [
+            0.3,
+            0.9
+          ],
+          "n_pairs": 10,
+          "sign_test_p_two_sided": 0.03125
+        },
+        "temporal": {
+          "paired_diff_mean": 0.1,
+          "ci95_bootstrap": [
+            0.0,
+            0.3
+          ],
+          "n_pairs": 10,
+          "sign_test_p_two_sided": 1.0
+        }
+      }
+    },
+    "running_summary": {
+      "overall": {
+        "retention_diff": {
+          "paired_diff_mean": 0.12,
+          "ci95_bootstrap": [
+            0.0,
+            0.24
+          ],
+          "n_pairs": 50,
+          "sign_test_p_two_sided": 0.109375
+        }
+      },
+      "by_category": {
+        "adversarial": {
+          "paired_diff_mean": 0.1818,
+          "ci95_bootstrap": [
+            0.0,
+            0.4545
+          ],
+          "n_pairs": 11,
+          "sign_test_p_two_sided": 0.5
+        },
+        "multi_hop": {
+          "paired_diff_mean": -0.1,
+          "ci95_bootstrap": [
+            -0.3,
+            0.0
+          ],
+          "n_pairs": 10,
+          "sign_test_p_two_sided": 1.0
+        },
+        "open_domain": {
+          "paired_diff_mean": 0.1111,
+          "ci95_bootstrap": [
+            0.0,
+            0.3333
+          ],
+          "n_pairs": 9,
+          "sign_test_p_two_sided": 1.0
+        },
+        "single_hop": {
+          "paired_diff_mean": 0.3,
+          "ci95_bootstrap": [
+            -0.1,
+            0.7
+          ],
+          "n_pairs": 10,
+          "sign_test_p_two_sided": 0.375
+        },
+        "temporal": {
+          "paired_diff_mean": 0.1,
+          "ci95_bootstrap": [
+            0.0,
+            0.3
+          ],
+          "n_pairs": 10,
+          "sign_test_p_two_sided": 1.0
+        }
+      }
+    }
+  }
+}

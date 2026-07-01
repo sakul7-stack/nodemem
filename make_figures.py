@@ -24,6 +24,15 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+plt.rcParams.update({
+    "font.size": 13,
+    "axes.titlesize": 14,
+    "axes.labelsize": 13,
+    "xtick.labelsize": 11,
+    "ytick.labelsize": 11,
+    "legend.fontsize": 11,
+    "figure.titlesize": 15,
+})
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 from datasets import Case, build_suite
@@ -52,14 +61,14 @@ RECENT_K = 6
 SEGMENT_SIZE = 6
 TRUNCATE_K = 10
 COMPACT_MAX_NOTES = 8
-SYNTH_MODEL = "llama-3.3-70b-versatile"
-EXTRACT_MODEL = "llama-3.1-8b-instant"
+SYNTH_MODEL = "mistral-large"
+EXTRACT_MODEL = "mimo-v2.5-free"
 
 STRATEGIES = [
     ("full_context", "Full context"),
     ("truncation", "Truncation"),
     ("running_summary", "Running summary"),
-    ("hierarchical", "Append-only notes"),
+    ("hierarchical", "Hierarchical Notes"),
     ("slot_memory", "Fact slots"),
     ("rag", "Retrieval (BM25)"),
     ("slot_rag_hybrid", "Slots + retrieval"),
@@ -104,7 +113,7 @@ def plot_measured_bars(results: dict, out_dir: Path) -> None:
     ]
     strategies = available_strategies(results)
     colors = [COLORS[key] for key, _ in strategies]
-    fig, axes = plt.subplots(1, 3, figsize=(12.5, 3.4))
+    fig, axes = plt.subplots(1, 3, figsize=(14, 4.2))
     labels = [label for _, label in strategies]
     for ax, (metric, title) in zip(axes, metrics):
         means = [stat(results, key, metric)[0] for key, _ in strategies]
@@ -116,7 +125,7 @@ def plot_measured_bars(results: dict, out_dir: Path) -> None:
         ax.set_xticklabels(labels, rotation=30, ha="right")
         ax.grid(axis="y", alpha=0.25)
     n = results.get("config", {}).get("n_cases_completed", "?")
-    fig.suptitle(f"Measured Groq small-scale evaluation (n = {n})", y=1.05, fontsize=12)
+    fig.suptitle(f"Measured Groq small-scale evaluation (n = {n})", y=1.05)
     save_figure(fig, out_dir, "measured_results_bars")
 
 
@@ -149,7 +158,7 @@ def plot_category_retention(results: dict, out_dir: Path) -> None:
     dataset = results.get("config", {}).get("dataset", "")
     n = results.get("config", {}).get("n_cases_completed", "?")
     ax.set_title(f"Per-category accuracy ({dataset}, n={n} conversations)")
-    ax.legend(frameon=False, fontsize=7, ncol=2)
+    ax.legend(frameon=False, ncol=2)
     ax.grid(axis="y", alpha=0.25)
     save_figure(fig, out_dir, "category_retention")
 
@@ -170,7 +179,7 @@ def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
             markersize=7,
             label=label,
         )
-        ax.annotate(label, (cost, retention), xytext=(6, 4), textcoords="offset points", fontsize=8)
+        ax.annotate(label, (cost, retention), xytext=(6, 4), textcoords="offset points")
     ax.axvline(100, color="#444444", linestyle="--", linewidth=1)
     ax.axhline(90, color="#777777", linestyle=":", linewidth=1)
     ax.set_xlabel("Cost (% of full-context baseline)")
@@ -189,7 +198,7 @@ def plot_ablation(results: dict, out_dir: Path) -> None:
     ablation = results.get("ablation_cheap_vs_expensive_extractor")
     if not ablation:
         return
-    labels = ["Cheap 8B extractor", "Expensive 70B extractor"]
+    labels = ["Cheap mimo-v2.5-free extractor", "Expensive mistral-large extractor"]
     keys = ["cheap_retention_pct", "expensive_retention_pct"]
     means = [float(ablation[k]["mean"]) for k in keys]
     errors = []
@@ -217,7 +226,7 @@ def draw_box(ax, xy: tuple[float, float], text: str, width: float = 2.2, height:
         facecolor=color,
     )
     ax.add_patch(box)
-    ax.text(x + width / 2, y + height / 2, text, ha="center", va="center", fontsize=9)
+    ax.text(x + width / 2, y + height / 2, text, ha="center", va="center", fontsize=11)
     return box
 
 
@@ -242,8 +251,8 @@ def plot_architecture(out_dir: Path) -> None:
     draw_arrow(ax, (6.9, 2.25), (6.9, 1.62))
     draw_arrow(ax, (5.2, 1.26), (5.8, 1.26))
     draw_arrow(ax, (8.0, 1.26), (8.3, 1.26))
-    ax.text(0.3, 3.35, "Write path: extract slots once per segment, overwrite by key", fontsize=9, weight="bold")
-    ax.text(3.0, 0.35, "Read path: latest-value slots + recent messages replace full-history prompts", fontsize=9, weight="bold")
+    ax.text(0.3, 3.35, "Write path: extract slots once per segment, overwrite by key", fontsize=11, weight="bold")
+    ax.text(3.0, 0.35, "Read path: latest-value slots + recent messages replace full-history prompts", fontsize=11, weight="bold")
     ax.set_xlim(0, 10)
     ax.set_ylim(0, 3.8)
     save_figure(fig, out_dir, "architecture_flowchart")

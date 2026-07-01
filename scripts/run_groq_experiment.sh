@@ -10,17 +10,17 @@ fi
 
 .venv/bin/python -m pip install -r requirements.txt >/dev/null
 
-if [[ -z "${GROQ_API_KEY:-}" && -z "${GROQ_API_KEYS:-}" ]]; then
-  if [[ -f .env ]] && grep -Eq '^GROQ_API_KEYS?=' .env; then
-    echo "Using Groq API key(s) from .env (keys not printed)."
+if [[ -z "${NARA_API_KEY:-}" && -z "${NARA_API_KEYS:-}" && -z "${BYNARA_API_KEY:-}" ]]; then
+  if [[ -f .env ]] && grep -Eq '^(NARA_API_KEYS?|BYNARA_API_KEY)=' .env; then
+    echo "Using Nara Router API key(s) from .env (keys not printed)."
   else
-    echo "Groq API key is not set. Add GROQ_API_KEY=... or GROQ_API_KEYS=key1,key2 to .env, or export it first." >&2
+    echo "Nara Router API key is not set. Add NARA_API_KEY=... or NARA_API_KEYS=key1,key2 to .env, or export it first." >&2
     exit 1
   fi
 fi
 
 if [[ "$#" -eq 0 ]]; then
-  set -- --provider groq --scale small --ablation --out results_live_rerun.json
+  set -- --provider nara --scale small --ablation --out results_nara_rerun.json
 fi
 
 echo "Running: evaluate.py $*"

@@ -14,7 +14,7 @@ single source of truth for state and how to continue.
 - **LongMemEval knowledge-update run COMPLETE (n = 72).** Results in
   `results_lme_knowledge_update.json`. Key finding: BM25 RAG matches full context
   (73.6% vs 69.4%) at 88% cost; fact-slots alone are worst (37.5%).
-- **Judge cross-validation COMPLETE.** 30 LoCoMo questions, llama-3.3-70b vs
+- **Judge cross-validation COMPLETE.** 30 LoCoMo questions, mistral-large vs
   openai/gpt-oss-120b: 83.3% agreement, Cohen's κ = 0.468.
 - **Remaining LongMemEval categories** (temporal, multi-session, abstention) not
   yet run.

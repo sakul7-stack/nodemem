@@ -4,7 +4,7 @@
 > LongMemEval's knowledge-update category (n=72), BM25 retrieval matches full
 > context (73.6% vs. 69.4%) at 88% cost. Fact-slots alone are the worst method
 > (37.5%) — they fail even on their intended use-case, because the cheap 8B
-> extractor misses most fact updates. A judge cross-validation (30 Qs, llama-3.3-70b
+> extractor misses most fact updates. A judge cross-validation (30 Qs, mistral-large
 > vs gpt-oss-120b) shows 83.3% agreement, κ=0.468. Full details in
 > **`REAL_DATA_EXPERIMENTS.md`**.
 >

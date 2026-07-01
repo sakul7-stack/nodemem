@@ -96,6 +96,8 @@ _PROVIDERS = {
     "groq": ("https://api.groq.com/openai/v1", ("GROQ_API_KEY", "GROQ_API_KEYS")),
     "mistral": ("https://router.bynara.id/v1",
                 ("BYNARA_API_KEY", "BYNARA_API_KEYS", "MISTRAL_API_KEY", "MISTRAL_API_KEYS")),
+    "nara": ("https://router.bynara.id/v1",
+             ("NARA_API_KEY", "NARA_API_KEYS", "BYNARA_API_KEY", "BYNARA_API_KEYS")),
 }
 
 
@@ -378,8 +380,8 @@ def summarize(values):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--offline", action="store_true")
-    ap.add_argument("--provider", choices=["anthropic", "groq"], default="anthropic")
-    ap.add_argument("--synth-provider", choices=["groq", "mistral", "anthropic"], default=None,
+    ap.add_argument("--provider", choices=["anthropic", "groq", "nara"], default="nara")
+    ap.add_argument("--synth-provider", choices=["groq", "mistral", "nara", "anthropic"], default=None,
                     help="provider for the SYNTHESIZER only (default: same as --provider). "
                          "Use 'mistral' to test a stronger second model family; the extractor "
                          "and judge stay on --provider for comparable scoring.")
@@ -433,6 +435,9 @@ def main():
     if args.provider == "groq":
         args.extract_model = args.extract_model or "llama-3.1-8b-instant"
         args.price_extract = args.price_extract or "llama-3.1-8b-instant"
+    elif args.provider == "nara":
+        args.extract_model = args.extract_model or "mimo-v2.5-free"
+        args.price_extract = args.price_extract or "mimo-v2.5-free"
     else:
         args.extract_model = args.extract_model or "claude-opus-4-8"
         args.price_extract = args.price_extract or "claude-haiku-4-5"
@@ -440,6 +445,7 @@ def main():
         args.synth_model = {
             "groq": "llama-3.3-70b-versatile",
             "mistral": "mistral-large",
+            "nara": "mistral-large",
             "anthropic": "claude-opus-4-8",
         }[synth_provider]
 
