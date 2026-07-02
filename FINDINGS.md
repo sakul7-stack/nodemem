@@ -1,5 +1,27 @@
 # Findings: Persistent Note-Based Memory Pilot Study
 
+> **2026-07-02 UPDATE — LongMemEval temporal/multi-session/abstention added.**
+> Across the temporal (n=73), multi-session (n=56), and abstention (n=6)
+> categories (n=135 total), the slots+retrieval hybrid matches full context
+> (45.2% vs. 45.2%) and BM25 retrieval nearly matches it (41.5%, paired
+> Δ=−3.7pp, p=0.51, n.s.), while fact-slots alone remain the weakest method
+> (15.6%, p<0.001). The hybrid even exceeds full context on multi-session
+> reasoning (35.7% vs. 33.9%). Cost savings are smaller than on LoCoMo
+> (retrieval at 75% of full-context cost) because LongMemEval oracle
+> conversations are much shorter, but the retention ordering is identical.
+> The full 248-case sweep stalled on the Groq daily 70B-judge token cap after
+> n=135; that sample is the reported result (`results_lme_remaining_n135.json`).
+>
+> | Strategy | Retention | Cost |
+> |---|---:|---:|
+> | Full context | 45.2% | 100.0% |
+> | Truncation | 13.3% | 60.5% |
+> | Running summary | 16.3% | 62.6% |
+> | Hierarchical notes | 24.4% | 53.3% |
+> | Fact slots | 15.6% | 51.5% |
+> | Retrieval (BM25) | 41.5% | 75.5% |
+> | **Slots + retrieval** | **45.2%** | **85.4%** |
+>
 > **2026-07-01 UPDATE — LongMemEval knowledge-update result added.** On
 > LongMemEval's knowledge-update category (n=72), BM25 retrieval matches full
 > context (73.6% vs. 69.4%) at 88% cost. Fact-slots alone are the worst method

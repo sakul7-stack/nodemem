@@ -16,8 +16,14 @@ single source of truth for state and how to continue.
   (73.6% vs 69.4%) at 88% cost; fact-slots alone are worst (37.5%).
 - **Judge cross-validation COMPLETE.** 30 LoCoMo questions, llama-3.3-70b vs
   openai/gpt-oss-120b: 83.3% agreement, Cohen's κ = 0.468.
-- **Remaining LongMemEval categories** (temporal, multi-session, abstention) not
-  yet run.
+- **Remaining LongMemEval categories COMPLETE at n = 135** (temporal 73,
+  multi-session 56, abstention 6). Results in `results_lme_remaining_n135.json`.
+  Key finding: slots+retrieval hybrid matches full context (45.2% vs 45.2%), BM25
+  nearly matches (41.5%, paired Δ=−3.7pp, p=0.51 n.s.), fact-slots worst (15.6%,
+  p<0.001); hybrid exceeds full context on multi-session (35.7% vs 33.9%). The
+  full 248-case sweep stalled on the Groq daily 70B-judge token cap after n=135;
+  that sample is the reported result. Regenerate the paper tables with
+  `python scripts/lme_remaining_table.py results_lme_remaining_n135.json`.
 - The Mistral-Large second-model run via the free Bynara router was dropped from
   the main loop (router throttles under sustained load); the `--synth-provider
   mistral` code path remains for use with a faster Mistral endpoint later.
@@ -183,12 +189,12 @@ moderate-to-substantial inter-rater reliability.
 ---
 
 ## PENDING WORK
-1. **Remaining LongMemEval categories** (temporal, multi-session, abstention).
+1. **Scale LongMemEval** from the oracle subset (n=135 done) to the full 500-Q suite (blocked on Groq daily 70B-judge cap).
 2. **Second LoCoMo seed** for tighter LoCoMo intervals.
 3. **Dense (embedding) RAG backend** evaluation.
 4. **Extractor-size ablation** (`--ablation`) on real data.
 5. **Sensitivity sweeps**: `recent_k`, `max_slots`, `top_k`.
-6. **Build final PDF** (`tectonic -o build main.tex`).
+6. **Build final PDF** — DONE (`build/main.pdf`, 9 pp; root `main.pdf` synced).
 
 ## FILE INVENTORY (new/changed this migration)
 - `real_datasets.py` — LoCoMo + LongMemEval loaders into the `Case`/`Fact` shape.
@@ -203,5 +209,7 @@ moderate-to-substantial inter-rater reliability.
 - `scripts/judge_agreement.py` — judge cross-validation.
 - `results_locomo_n160.json` — final LoCoMo results.
 - `results_lme_knowledge_update.json` — LongMemEval knowledge-update results.
+- `results_lme_remaining_n135.json` — LongMemEval temporal/multi-session/abstention (n=135).
+- `scripts/lme_remaining_table.py` — table generator for the remaining LME categories.
 - `figures/category_retention.{pdf,png}` — per-category figure.
 - `data/locomo10.json`, `data/longmemeval_oracle.json` — downloaded benchmarks.

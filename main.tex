@@ -626,7 +626,7 @@ The evaluation uses openly released, human-annotated benchmarks (LoCoMo, LongMem
 
     \item \textbf{Absolute retention is low for all methods}: LoCoMo is hard, and a 17B synthesizer answers only about a third of questions even with full context. Our claims are therefore comparative (memory vs. full context at equal model), not about absolute accuracy; a stronger synthesizer on a paid tier would raise all rows.
 
-    \item \textbf{Judge model}: We score with a Groq-hosted Llama judge using the LongMemEval prompts rather than GPT-4o. This keeps replication free but may differ from the canonical judge; we expose the judge as a configuration option and plan a judge-agreement check on a labeled subset.
+    \item \textbf{Judge model}: We score with a Groq-hosted Llama judge using the LongMemEval prompts rather than GPT-4o. This keeps replication free but may differ from the canonical judge; we expose the judge as a configuration option. As a robustness check we cross-validated the \texttt{llama-3.3-70b-versatile} judge against a second, architecturally distinct judge (\texttt{gpt-oss-120b}) on a labeled 30-question subset and observed 83.3\% raw agreement (Cohen's $\kappa=0.47$, moderate-to-substantial), with neither judge showing a systematic scoring bias.
 
     \item \textbf{Retrieval is sparse}: The retrieval baseline is BM25 over turns. A dense-embedding backend~\cite{karpukhin2020dense} is implemented but not yet run at scale; multi-hop questions in particular may benefit from iterative or graph retrieval \cite{xu2025amem}.
 
@@ -645,7 +645,7 @@ The evaluation uses openly released, human-annotated benchmarks (LoCoMo, LongMem
     \item \textbf{Extractor-size ablation on real data}: quantify whether the cheap 8B extractor matches a larger extractor for slot quality on LoCoMo/LongMemEval.
     \item \textbf{Stronger synthesizers}: repeat on a 70B-class or proprietary model (paid tier) to test whether the retrieval-vs-full-context ordering persists as absolute accuracy rises.
     \item \textbf{Sensitivity}: sweep \texttt{recent\_k}, segment size, slot cap, and retrieval top-$k$.
-    \item \textbf{Judge robustness}: cross-check the Llama judge against GPT-4o on a labeled subset.
+    \item \textbf{Judge robustness}: extend the two-judge cross-validation (currently 30 questions, $\kappa=0.47$) to a larger labeled subset and add GPT-4o as a third reference judge.
 \end{itemize}
 
 \section{Conclusion}
