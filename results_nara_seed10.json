@@ -1,0 +1,2462 @@
+{
+  "config": {
+    "offline": false,
+    "provider": "openrouter",
+    "scale": "tiny",
+    "synth_provider": "nara",
+    "dataset": "locomo",
+    "judge": "llm",
+    "judge_model": "mistral-large",
+    "rag": false,
+    "rag_backend": null,
+    "n_cases_requested": 10,
+    "n_cases_completed": 10,
+    "synth_model": "mistral-large",
+    "extract_model_called": "xiaomi/mimo-v2.5",
+    "extract_price_tier": "xiaomi/mimo-v2.5",
+    "recent_k": 6,
+    "truncate_k": 10,
+    "segment_size": 24,
+    "rag_top_k": 5,
+    "compact_notes": 0,
+    "slot_memory": false,
+    "token_counter": "tiktoken/cl100k (cumulative); provider usage (per-query real)",
+    "seed": 10,
+    "elapsed_s": 2698.1
+  },
+  "strategies": {
+    "full_context": {
+      "token_reduction_real_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 10
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 10
+      },
+      "cost_pct_of_baseline": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 10
+      },
+      "retention_pct": {
+        "mean": 60.0,
+        "std": 28.28,
+        "ci95": [
+          42.0,
+          78.0
+        ],
+        "n": 10
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 54.55,
+        "multi_hop": 80.0,
+        "open_domain": 66.67,
+        "single_hop": 70.0,
+        "temporal": 30.0
+      },
+      "category_counts": {
+        "adversarial": 11,
+        "multi_hop": 10,
+        "open_domain": 9,
+        "single_hop": 10,
+        "temporal": 10
+      }
+    },
+    "truncation": {
+      "token_reduction_real_pct": {
+        "mean": 98.14,
+        "std": 0.35,
+        "ci95": [
+          97.91,
+          98.33
+        ],
+        "n": 10
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 95.79,
+        "std": 0.94,
+        "ci95": [
+          95.16,
+          96.31
+        ],
+        "n": 10
+      },
+      "cost_pct_of_baseline": {
+        "mean": 4.21,
+        "std": 0.94,
+        "ci95": [
+          3.7,
+          4.84
+        ],
+        "n": 10
+      },
+      "retention_pct": {
+        "mean": 28.0,
+        "std": 9.8,
+        "ci95": [
+          22.0,
+          34.0
+        ],
+        "n": 10
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 100.0,
+        "multi_hop": 0.0,
+        "open_domain": 22.22,
+        "single_hop": 10.0,
+        "temporal": 0.0
+      },
+      "category_counts": {
+        "adversarial": 11,
+        "multi_hop": 10,
+        "open_domain": 9,
+        "single_hop": 10,
+        "temporal": 10
+      }
+    },
+    "running_summary": {
+      "token_reduction_real_pct": {
+        "mean": 95.64,
+        "std": 0.85,
+        "ci95": [
+          95.08,
+          96.08
+        ],
+        "n": 10
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 91.07,
+        "std": 1.9,
+        "ci95": [
+          89.82,
+          92.06
+        ],
+        "n": 10
+      },
+      "cost_pct_of_baseline": {
+        "mean": 9.73,
+        "std": 2.09,
+        "ci95": [
+          8.63,
+          11.12
+        ],
+        "n": 10
+      },
+      "retention_pct": {
+        "mean": 38.0,
+        "std": 16.61,
+        "ci95": [
+          28.0,
+          48.0
+        ],
+        "n": 10
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 100.0,
+        "multi_hop": 10.0,
+        "open_domain": 33.33,
+        "single_hop": 40.0,
+        "temporal": 0.0
+      },
+      "category_counts": {
+        "adversarial": 11,
+        "multi_hop": 10,
+        "open_domain": 9,
+        "single_hop": 10,
+        "temporal": 10
+      }
+    },
+    "hierarchical": {
+      "token_reduction_real_pct": {
+        "mean": 97.71,
+        "std": 0.13,
+        "ci95": [
+          97.63,
+          97.78
+        ],
+        "n": 10
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 96.1,
+        "std": 0.63,
+        "ci95": [
+          95.68,
+          96.43
+        ],
+        "n": 10
+      },
+      "cost_pct_of_baseline": {
+        "mean": 3.9,
+        "std": 0.63,
+        "ci95": [
+          3.57,
+          4.32
+        ],
+        "n": 10
+      },
+      "retention_pct": {
+        "mean": 30.0,
+        "std": 13.42,
+        "ci95": [
+          22.0,
+          40.0
+        ],
+        "n": 10
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 100.0,
+        "multi_hop": 10.0,
+        "open_domain": 22.22,
+        "single_hop": 10.0,
+        "temporal": 0.0
+      },
+      "category_counts": {
+        "adversarial": 11,
+        "multi_hop": 10,
+        "open_domain": 9,
+        "single_hop": 10,
+        "temporal": 10
+      }
+    }
+  },
+  "cost_breakdown_usd": {
+    "extractor_total_cascade_price": 0.0,
+    "extractor_total_actual_price": 0.0,
+    "summary_maintenance_total": 0.494824
+  },
+  "latency_s": {
+    "full_response": {
+      "mean": 5.85,
+      "std": 1.11,
+      "ci95": [
+        5.16,
+        6.53
+      ],
+      "n": 10
+    },
+    "hier_response": {
+      "mean": 1.82,
+      "std": 0.27,
+      "ci95": [
+        1.66,
+        1.99
+      ],
+      "n": 10
+    },
+    "extractor_call": {
+      "mean": 17.49,
+      "std": 17.87,
+      "ci95": [
+        14.42,
+        21.05
+      ],
+      "n": 104
+    },
+    "overhead_mean": -4.031
+  },
+  "case_metrics": [
+    {
+      "case_id": "conv-26",
+      "domain": "locomo",
+      "length_class": "419msg",
+      "n_messages": 419,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 89283,
+          "cumulative_input_tokens": 1823256,
+          "cost_usd": 3.646512,
+          "latency_s": 4.809473
+        },
+        "truncation": {
+          "token_reduction_real_pct": 97.442962,
+          "token_reduction_cumulative_pct": 94.403967,
+          "cost_pct_of_baseline": 5.596033,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2283,
+          "cumulative_input_tokens": 102030,
+          "cost_usd": 0.20406,
+          "latency_s": 2.020268
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 94.609276,
+          "token_reduction_cumulative_pct": 88.712337,
+          "cost_pct_of_baseline": 12.383999,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4813,
+          "cumulative_input_tokens": 205803,
+          "cost_usd": 0.451584,
+          "latency_s": 2.472638
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 97.476563,
+          "token_reduction_cumulative_pct": 95.257331,
+          "cost_pct_of_baseline": 4.742669,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2253,
+          "cumulative_input_tokens": 86471,
+          "cost_usd": 0.172942,
+          "latency_s": 1.832991
+        }
+      }
+    },
+    {
+      "case_id": "conv-30",
+      "domain": "locomo",
+      "length_class": "369msg",
+      "n_messages": 369,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 68316,
+          "cumulative_input_tokens": 1276576,
+          "cost_usd": 2.553152,
+          "latency_s": 4.338905
+        },
+        "truncation": {
+          "token_reduction_real_pct": 97.627203,
+          "token_reduction_cumulative_pct": 93.757442,
+          "cost_pct_of_baseline": 6.242558,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1621,
+          "cumulative_input_tokens": 79691,
+          "cost_usd": 0.159382,
+          "latency_s": 1.963599
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 93.579835,
+          "token_reduction_cumulative_pct": 86.725506,
+          "cost_pct_of_baseline": 14.52581,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4386,
+          "cumulative_input_tokens": 169459,
+          "cost_usd": 0.370866,
+          "latency_s": 1.990277
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 97.488143,
+          "token_reduction_cumulative_pct": 94.699101,
+          "cost_pct_of_baseline": 5.300899,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1716,
+          "cumulative_input_tokens": 67670,
+          "cost_usd": 0.13534,
+          "latency_s": 1.609795
+        }
+      }
+    },
+    {
+      "case_id": "conv-41",
+      "domain": "locomo",
+      "length_class": "663msg",
+      "n_messages": 663,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 129666,
+          "cumulative_input_tokens": 4365299,
+          "cost_usd": 8.730598,
+          "latency_s": 6.835577
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.29485,
+          "token_reduction_cumulative_pct": 96.470643,
+          "cost_pct_of_baseline": 3.529357,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2211,
+          "cumulative_input_tokens": 154067,
+          "cost_usd": 0.308134,
+          "latency_s": 1.834753
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 96.243425,
+          "token_reduction_cumulative_pct": 92.884199,
+          "cost_pct_of_baseline": 7.773832,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4871,
+          "cumulative_input_tokens": 310626,
+          "cost_usd": 0.678702,
+          "latency_s": 2.196407
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 97.793562,
+          "token_reduction_cumulative_pct": 96.622843,
+          "cost_pct_of_baseline": 3.377157,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2861,
+          "cumulative_input_tokens": 147423,
+          "cost_usd": 0.294846,
+          "latency_s": 2.027942
+        }
+      }
+    },
+    {
+      "case_id": "conv-42",
+      "domain": "locomo",
+      "length_class": "629msg",
+      "n_messages": 629,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 113572,
+          "cumulative_input_tokens": 3287073,
+          "cost_usd": 6.574146,
+          "latency_s": 6.477193
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.065544,
+          "token_reduction_cumulative_pct": 96.048551,
+          "cost_pct_of_baseline": 3.951449,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2197,
+          "cumulative_input_tokens": 129887,
+          "cost_usd": 0.259774,
+          "latency_s": 1.958449
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 95.88631,
+          "token_reduction_cumulative_pct": 91.272144,
+          "cost_pct_of_baseline": 9.484426,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4672,
+          "cumulative_input_tokens": 286891,
+          "cost_usd": 0.62352,
+          "latency_s": 2.702376
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 97.70454,
+          "token_reduction_cumulative_pct": 96.150709,
+          "cost_pct_of_baseline": 3.849291,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2607,
+          "cumulative_input_tokens": 126529,
+          "cost_usd": 0.253058,
+          "latency_s": 1.885259
+        }
+      }
+    },
+    {
+      "case_id": "conv-43",
+      "domain": "locomo",
+      "length_class": "680msg",
+      "n_messages": 680,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 130214,
+          "cumulative_input_tokens": 4515086,
+          "cost_usd": 9.030172,
+          "latency_s": 8.010316
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.457155,
+          "token_reduction_cumulative_pct": 96.588348,
+          "cost_pct_of_baseline": 3.411652,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2009,
+          "cumulative_input_tokens": 154039,
+          "cost_usd": 0.308078,
+          "latency_s": 1.649164
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 96.410524,
+          "token_reduction_cumulative_pct": 92.788443,
+          "cost_pct_of_baseline": 7.850482,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4674,
+          "cumulative_input_tokens": 325608,
+          "cost_usd": 0.708912,
+          "latency_s": 2.351883
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 97.911899,
+          "token_reduction_cumulative_pct": 96.690052,
+          "cost_pct_of_baseline": 3.309948,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2719,
+          "cumulative_input_tokens": 149447,
+          "cost_usd": 0.298894,
+          "latency_s": 1.628711
+        }
+      }
+    },
+    {
+      "case_id": "conv-44",
+      "domain": "locomo",
+      "length_class": "675msg",
+      "n_messages": 675,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": null,
+          "correct": 5,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 129904,
+          "cumulative_input_tokens": 4147615,
+          "cost_usd": 8.29523,
+          "latency_s": 5.642008
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.095517,
+          "token_reduction_cumulative_pct": 96.416181,
+          "cost_pct_of_baseline": 3.583819,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2474,
+          "cumulative_input_tokens": 148643,
+          "cost_usd": 0.297286,
+          "latency_s": 1.521135
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 96.182566,
+          "token_reduction_cumulative_pct": 92.340032,
+          "cost_pct_of_baseline": 8.338117,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4959,
+          "cumulative_input_tokens": 317706,
+          "cost_usd": 0.691666,
+          "latency_s": 2.121299
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 97.687523,
+          "token_reduction_cumulative_pct": 96.496179,
+          "cost_pct_of_baseline": 3.503821,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 3004,
+          "cumulative_input_tokens": 145325,
+          "cost_usd": 0.29065,
+          "latency_s": 1.527882
+        }
+      }
+    },
+    {
+      "case_id": "conv-47",
+      "domain": "locomo",
+      "length_class": "689msg",
+      "n_messages": 689,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 100.0,
+          "fact_update_retention_pct": null,
+          "correct": 5,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 119564,
+          "cumulative_input_tokens": 4142356,
+          "cost_usd": 8.284712,
+          "latency_s": 4.30775
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.562276,
+          "token_reduction_cumulative_pct": 96.576924,
+          "cost_pct_of_baseline": 3.423076,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1719,
+          "cumulative_input_tokens": 141796,
+          "cost_usd": 0.283592,
+          "latency_s": 1.60636
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 96.186979,
+          "token_reduction_cumulative_pct": 92.321688,
+          "cost_pct_of_baseline": 8.323717,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4559,
+          "cumulative_input_tokens": 318063,
+          "cost_usd": 0.689596,
+          "latency_s": 2.019528
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 97.822087,
+          "token_reduction_cumulative_pct": 96.560532,
+          "cost_pct_of_baseline": 3.439468,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2604,
+          "cumulative_input_tokens": 142475,
+          "cost_usd": 0.28495,
+          "latency_s": 1.526014
+        }
+      }
+    },
+    {
+      "case_id": "conv-48",
+      "domain": "locomo",
+      "length_class": "681msg",
+      "n_messages": 681,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 118374,
+          "cumulative_input_tokens": 3945235,
+          "cost_usd": 7.89047,
+          "latency_s": 5.580314
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.480241,
+          "token_reduction_cumulative_pct": 96.478131,
+          "cost_pct_of_baseline": 3.521869,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1799,
+          "cumulative_input_tokens": 138946,
+          "cost_usd": 0.277892,
+          "latency_s": 1.656137
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 96.02193,
+          "token_reduction_cumulative_pct": 91.805913,
+          "cost_pct_of_baseline": 8.84875,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4709,
+          "cumulative_input_tokens": 323276,
+          "cost_usd": 0.698208,
+          "latency_s": 1.590815
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 97.673476,
+          "token_reduction_cumulative_pct": 96.463354,
+          "cost_pct_of_baseline": 3.536646,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2754,
+          "cumulative_input_tokens": 139529,
+          "cost_usd": 0.279058,
+          "latency_s": 1.675912
+        }
+      }
+    },
+    {
+      "case_id": "conv-49",
+      "domain": "locomo",
+      "length_class": "509msg",
+      "n_messages": 509,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 96455,
+          "cumulative_input_tokens": 2429262,
+          "cost_usd": 4.858524,
+          "latency_s": 6.384538
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.050905,
+          "token_reduction_cumulative_pct": 95.356985,
+          "cost_pct_of_baseline": 4.643015,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1880,
+          "cumulative_input_tokens": 112791,
+          "cost_usd": 0.225582,
+          "latency_s": 2.007539
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 95.287958,
+          "token_reduction_cumulative_pct": 90.091723,
+          "cost_pct_of_baseline": 10.800688,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4545,
+          "cumulative_input_tokens": 240698,
+          "cost_usd": 0.524754,
+          "latency_s": 2.488955
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 97.71396,
+          "token_reduction_cumulative_pct": 95.786539,
+          "cost_pct_of_baseline": 4.213461,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2205,
+          "cumulative_input_tokens": 102356,
+          "cost_usd": 0.204712,
+          "latency_s": 2.032105
+        }
+      }
+    },
+    {
+      "case_id": "conv-50",
+      "domain": "locomo",
+      "length_class": "568msg",
+      "n_messages": 568,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 80.0,
+          "fact_update_retention_pct": null,
+          "correct": 4,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 121067,
+          "cumulative_input_tokens": 3350016,
+          "cost_usd": 6.700032,
+          "latency_s": 6.07424
+        },
+        "truncation": {
+          "token_reduction_real_pct": 98.296811,
+          "token_reduction_cumulative_pct": 95.827811,
+          "cost_pct_of_baseline": 4.172189,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2062,
+          "cumulative_input_tokens": 139769,
+          "cost_usd": 0.279538,
+          "latency_s": 2.001889
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 95.971652,
+          "token_reduction_cumulative_pct": 91.788517,
+          "cost_pct_of_baseline": 9.006644,
+          "retention_pct": 60.0,
+          "fact_update_retention_pct": null,
+          "correct": 3,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4877,
+          "cumulative_input_tokens": 275086,
+          "cost_usd": 0.603448,
+          "latency_s": 2.319706
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 97.813607,
+          "token_reduction_cumulative_pct": 96.251301,
+          "cost_pct_of_baseline": 3.748699,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2647,
+          "cumulative_input_tokens": 125582,
+          "cost_usd": 0.251164,
+          "latency_s": 2.408111
+        }
+      }
+    }
+  ],
+  "question_metrics": [
+    {
+      "key": "conv-26-q191",
+      "category": "adversarial",
+      "is_abstention": true,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 17856,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 456,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 962,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 450,
+          "errored": false
+        }
+      },
+      "case_id": "conv-26"
+    },
+    {
+      "key": "conv-26-q76",
+      "category": "multi_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 17859,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 459,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 965,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 453,
+          "errored": false
+        }
+      },
+      "case_id": "conv-26"
+    },
+    {
+      "key": "conv-26-q22",
+      "category": "open_domain",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 17859,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 459,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 965,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 453,
+          "errored": false
+        }
+      },
+      "case_id": "conv-26"
+    },
+    {
+      "key": "conv-26-q146",
+      "category": "single_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 17854,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 454,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 960,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 448,
+          "errored": false
+        }
+      },
+      "case_id": "conv-26"
+    },
+    {
+      "key": "conv-26-q25",
+      "category": "temporal",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 17855,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 455,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 961,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 449,
+          "errored": false
+        }
+      },
+      "case_id": "conv-26"
+    },
+    {
+      "key": "conv-30-q82",
+      "category": "adversarial",
+      "is_abstention": true,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 13663,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 324,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 877,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 343,
+          "errored": false
+        }
+      },
+      "case_id": "conv-30"
+    },
+    {
+      "key": "conv-30-q25",
+      "category": "multi_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 13662,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 323,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 876,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 342,
+          "errored": false
+        }
+      },
+      "case_id": "conv-30"
+    },
+    {
+      "key": "conv-30-q4",
+      "category": "single_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 13664,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 325,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 878,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 344,
+          "errored": false
+        }
+      },
+      "case_id": "conv-30"
+    },
+    {
+      "key": "conv-30-q19",
+      "category": "temporal",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 13664,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 325,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 878,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 344,
+          "errored": false
+        }
+      },
+      "case_id": "conv-30"
+    },
+    {
+      "key": "conv-30-q93",
+      "category": "adversarial",
+      "is_abstention": true,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 13663,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 324,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 877,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 343,
+          "errored": false
+        }
+      },
+      "case_id": "conv-30"
+    },
+    {
+      "key": "conv-41-q190",
+      "category": "adversarial",
+      "is_abstention": true,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 25934,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 443,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 975,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 573,
+          "errored": false
+        }
+      },
+      "case_id": "conv-41"
+    },
+    {
+      "key": "conv-41-q26",
+      "category": "multi_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 25935,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 444,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 976,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 574,
+          "errored": false
+        }
+      },
+      "case_id": "conv-41"
+    },
+    {
+      "key": "conv-41-q50",
+      "category": "open_domain",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 25929,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 438,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 970,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 568,
+          "errored": false
+        }
+      },
+      "case_id": "conv-41"
+    },
+    {
+      "key": "conv-41-q112",
+      "category": "single_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 25932,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 441,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 973,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 571,
+          "errored": false
+        }
+      },
+      "case_id": "conv-41"
+    },
+    {
+      "key": "conv-41-q54",
+      "category": "temporal",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 25936,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 445,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 977,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 575,
+          "errored": false
+        }
+      },
+      "case_id": "conv-41"
+    },
+    {
+      "key": "conv-42-q239",
+      "category": "adversarial",
+      "is_abstention": true,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 22714,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 439,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 934,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 521,
+          "errored": false
+        }
+      },
+      "case_id": "conv-42"
+    },
+    {
+      "key": "conv-42-q56",
+      "category": "multi_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 22713,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 438,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 933,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 520,
+          "errored": false
+        }
+      },
+      "case_id": "conv-42"
+    },
+    {
+      "key": "conv-42-q66",
+      "category": "open_domain",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 22713,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 438,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 933,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 520,
+          "errored": false
+        }
+      },
+      "case_id": "conv-42"
+    },
+    {
+      "key": "conv-42-q107",
+      "category": "single_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 22713,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 438,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 933,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 520,
+          "errored": false
+        }
+      },
+      "case_id": "conv-42"
+    },
+    {
+      "key": "conv-42-q2",
+      "category": "temporal",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 22719,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 444,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 939,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 526,
+          "errored": false
+        }
+      },
+      "case_id": "conv-42"
+    },
+    {
+      "key": "conv-43-q234",
+      "category": "adversarial",
+      "is_abstention": true,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 26039,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 398,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 931,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 540,
+          "errored": false
+        }
+      },
+      "case_id": "conv-43"
+    },
+    {
+      "key": "conv-43-q13",
+      "category": "multi_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 26041,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 400,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 933,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 542,
+          "errored": false
+        }
+      },
+      "case_id": "conv-43"
+    },
+    {
+      "key": "conv-43-q5",
+      "category": "open_domain",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 26053,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 412,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 945,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 554,
+          "errored": false
+        }
+      },
+      "case_id": "conv-43"
+    },
+    {
+      "key": "conv-43-q164",
+      "category": "single_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 26041,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 400,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 933,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 542,
+          "errored": false
+        }
+      },
+      "case_id": "conv-43"
+    },
+    {
+      "key": "conv-43-q64",
+      "category": "temporal",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 26040,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 399,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 932,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 541,
+          "errored": false
+        }
+      },
+      "case_id": "conv-43"
+    },
+    {
+      "key": "conv-44-q151",
+      "category": "adversarial",
+      "is_abstention": true,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 25978,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 492,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 989,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 598,
+          "errored": false
+        }
+      },
+      "case_id": "conv-44"
+    },
+    {
+      "key": "conv-44-q24",
+      "category": "multi_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 25980,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 494,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 991,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 600,
+          "errored": false
+        }
+      },
+      "case_id": "conv-44"
+    },
+    {
+      "key": "conv-44-q20",
+      "category": "open_domain",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 25979,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 493,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 990,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 599,
+          "errored": false
+        }
+      },
+      "case_id": "conv-44"
+    },
+    {
+      "key": "conv-44-q62",
+      "category": "single_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 25984,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 498,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 995,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 604,
+          "errored": false
+        }
+      },
+      "case_id": "conv-44"
+    },
+    {
+      "key": "conv-44-q38",
+      "category": "temporal",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 25983,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 497,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 994,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 603,
+          "errored": false
+        }
+      },
+      "case_id": "conv-44"
+    },
+    {
+      "key": "conv-47-q151",
+      "category": "adversarial",
+      "is_abstention": true,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 23914,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 345,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 913,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 522,
+          "errored": false
+        }
+      },
+      "case_id": "conv-47"
+    },
+    {
+      "key": "conv-47-q9",
+      "category": "multi_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 23909,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 340,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 908,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 517,
+          "errored": false
+        }
+      },
+      "case_id": "conv-47"
+    },
+    {
+      "key": "conv-47-q16",
+      "category": "open_domain",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 23916,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 347,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 915,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 524,
+          "errored": false
+        }
+      },
+      "case_id": "conv-47"
+    },
+    {
+      "key": "conv-47-q113",
+      "category": "single_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 23913,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 344,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 912,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 521,
+          "errored": false
+        }
+      },
+      "case_id": "conv-47"
+    },
+    {
+      "key": "conv-47-q46",
+      "category": "temporal",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 23912,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 343,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 911,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 520,
+          "errored": false
+        }
+      },
+      "case_id": "conv-47"
+    },
+    {
+      "key": "conv-48-q237",
+      "category": "adversarial",
+      "is_abstention": true,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 23678,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 363,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 945,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 554,
+          "errored": false
+        }
+      },
+      "case_id": "conv-48"
+    },
+    {
+      "key": "conv-48-q8",
+      "category": "multi_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 23677,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 362,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 944,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 553,
+          "errored": false
+        }
+      },
+      "case_id": "conv-48"
+    },
+    {
+      "key": "conv-48-q40",
+      "category": "open_domain",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 23674,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 359,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 941,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 550,
+          "errored": false
+        }
+      },
+      "case_id": "conv-48"
+    },
+    {
+      "key": "conv-48-q90",
+      "category": "single_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 23671,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 356,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 938,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 547,
+          "errored": false
+        }
+      },
+      "case_id": "conv-48"
+    },
+    {
+      "key": "conv-48-q17",
+      "category": "temporal",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 23674,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 359,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 941,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 550,
+          "errored": false
+        }
+      },
+      "case_id": "conv-48"
+    },
+    {
+      "key": "conv-49-q195",
+      "category": "adversarial",
+      "is_abstention": true,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 19293,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 378,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 911,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 443,
+          "errored": false
+        }
+      },
+      "case_id": "conv-49"
+    },
+    {
+      "key": "conv-49-q21",
+      "category": "multi_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 19295,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 380,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 913,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 445,
+          "errored": false
+        }
+      },
+      "case_id": "conv-49"
+    },
+    {
+      "key": "conv-49-q38",
+      "category": "open_domain",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 19295,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 380,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 913,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 445,
+          "errored": false
+        }
+      },
+      "case_id": "conv-49"
+    },
+    {
+      "key": "conv-49-q84",
+      "category": "single_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 19287,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 372,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 905,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 437,
+          "errored": false
+        }
+      },
+      "case_id": "conv-49"
+    },
+    {
+      "key": "conv-49-q66",
+      "category": "temporal",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 19285,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 370,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 903,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 435,
+          "errored": false
+        }
+      },
+      "case_id": "conv-49"
+    },
+    {
+      "key": "conv-50-q198",
+      "category": "adversarial",
+      "is_abstention": true,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 24216,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 415,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 978,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 532,
+          "errored": false
+        }
+      },
+      "case_id": "conv-50"
+    },
+    {
+      "key": "conv-50-q49",
+      "category": "multi_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 24217,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 416,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 979,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 533,
+          "errored": false
+        }
+      },
+      "case_id": "conv-50"
+    },
+    {
+      "key": "conv-50-q37",
+      "category": "open_domain",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 24206,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 405,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 968,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 522,
+          "errored": false
+        }
+      },
+      "case_id": "conv-50"
+    },
+    {
+      "key": "conv-50-q72",
+      "category": "single_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 24218,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 417,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 980,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 534,
+          "errored": false
+        }
+      },
+      "case_id": "conv-50"
+    },
+    {
+      "key": "conv-50-q10",
+      "category": "temporal",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 24210,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 409,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 972,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 526,
+          "errored": false
+        }
+      },
+      "case_id": "conv-50"
+    }
+  ]
+}

@@ -42,6 +42,7 @@ PRICES = {
     "meta-llama/llama-4-scout-17b-16e-instruct": (0.00011, 0.00034),
     # Nara Router / Mistral (USD per 1k tokens)
     "mimo-v2.5-free": (0.0, 0.0),
+    "xiaomi/mimo-v2.5": (0.0, 0.0),
     "mistral-large": (0.0020, 0.0060),
     "mistral-large-latest": (0.0020, 0.0060),
     "mistral-small-latest": (0.0002, 0.0006),

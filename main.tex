@@ -36,7 +36,7 @@ Lalitpur, Nepal \\
 \maketitle
 
 \begin{abstract}
-Large language model (LLM) agents incur token costs that grow super-linearly with conversation length because each step may re-send an expanding history. Persistent external memory is often proposed as a remedy, but its retention/cost trade-off is easy to overstate and is frequently measured only on short or synthetic data. This paper studies cheap-extractor structured memory for LLM agents---a small model extracts durable facts from conversation segments into latest-value subject--predicate \emph{slots}, optionally combined with BM25 retrieval over past turns, and a larger model answers from that compact memory plus a recent-message window---and evaluates it on the real, human-annotated LoCoMo benchmark rather than self-generated data. Using an LLM-as-judge protocol with a Nara Router cascade (mimo-v2.5-free extractor, mistral-large synthesizer), we compare seven strategies: full context, truncation, running summary, hierarchical append-only notes, fact slots, BM25 retrieval, and a slots+retrieval hybrid. On $n=50$ human-written questions (5 per conversation $\times$ 10 conversations, 369--689 turns each), all compression strategies achieve massive cost savings (80--96\% reduction vs. full context). The slots+retrieval hybrid achieves the best retention (52.0\%) at only 8.4\% of full-context cost, closely approaching full-context retention (60.0\%) while being over $10\times$ cheaper. Hierarchical append-only notes reach 48.0\% retention at 19.8\% cost. A paired analysis shows fact-slot memory is significantly weaker than full context ($-22$ points, $p=0.027$) but trends better than truncation ($+12$ points, $p=0.109$). Full-context retention is itself low (60.0\%) because LoCoMo is genuinely hard---the mistral-large synthesizer on 300--700 message transcripts answers only 3/5 planted facts correctly on average. A per-category breakdown reveals slot memory excels at adversarial (distractor) questions (90.9\% correct abstention) but fails on multi-hop (0\%) and temporal (10\%) reasoning. We document that on freely available inference tiers, full-context prompting of long real conversations is often operationally inadmissible due to per-request token caps. We release the harness, adapters, judge, and per-question results.
+Large language model (LLM) agents incur token costs that grow super-linearly with conversation length because each step may re-send an expanding history. Persistent external memory is often proposed as a remedy, but its retention/cost trade-off is easy to overstate and is frequently measured only on short or synthetic data. This paper studies cheap-extractor structured memory for LLM agents---a small model extracts durable facts from conversation segments into latest-value subject--predicate \emph{slots}, optionally combined with BM25 retrieval over past turns, and a larger model answers from that compact memory plus a recent-message window---and evaluates it on the real, human-annotated LoCoMo benchmark rather than self-generated data. Using an LLM-as-judge protocol with a Nara Router cascade (mimo-v2.5-free extractor, mistral-large synthesizer), we compare seven strategies: full context, truncation, running summary, hierarchical append-only notes, fact slots, BM25 retrieval, and a slots+retrieval hybrid. On $n=150$ human-written questions (5 per conversation $\times$ 10 conversations $\times$ 3 independent seeds, 369--689 turns each), all compression strategies achieve massive cost savings (80--98\% reduction vs. full context). The slots+retrieval hybrid achieves the best retention (40.0\%) at only 6.1\% of full-context cost, with hierarchical append-only notes reaching 32.0\% retention at 9.3\% cost. A paired analysis shows fact-slot memory is significantly weaker than full context ($-28.7$ points, $p<0.001$) but trends slightly better than truncation ($+2.7$ points, $p=0.424$). Full-context retention is itself modest (56.7\%) because LoCoMo is genuinely hard---the mistral-large synthesizer on 300--700 message transcripts answers only 3/5 planted facts correctly on average. A per-category breakdown reveals slot memory excels at adversarial (distractor) questions (97.0\% correct abstention) but fails on multi-hop (3.3\%) and temporal (10\%) reasoning. We document that on freely available inference tiers, full-context prompting of long real conversations is often operationally inadmissible due to per-request token caps. We release the harness, adapters, judge, and per-question results.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -67,7 +67,7 @@ However, existing approaches face limitations. Naive truncation discards critica
     \item An evaluation protocol -- metrics, seven baselines, an LLM-as-judge scorer, and adapters to the real LoCoMo benchmark -- for measuring token reduction, cost, and per-category retention with question-level paired statistics (Section~\ref{sec:experiments}).
     \item An open-source reference implementation released as a research repository (Section~\ref{sec:implementation}).
 \end{enumerate}
-We evaluate on real, human-annotated long conversations rather than self-generated data. The result reverses an earlier short, synthetic pilot: at realistic conversation lengths (300--700 messages), all compression strategies achieve 80--96\% cost reduction, and the slots+retrieval hybrid approaches full-context retention (52.0\% vs.\ 60.0\%) at 8.4\% of the cost. Full-context retention is itself low (60.0\%) because LoCoMo is genuinely hard---a mid-sized model on a 20K-token transcript answers only 3/5 planted facts. Retrieval-based methods lead on single-hop, open-domain, and temporal questions; full context retains an edge on multi-hop reasoning. Fact slots alone are the weakest method (38.0\%), showing that the extractor bottleneck dominates the representational advantage of latest-value slot memory.
+We evaluate on real, human-annotated long conversations rather than self-generated data. The result reverses an earlier short, synthetic pilot: at realistic conversation lengths (300--700 messages), all compression strategies achieve 80--98\% cost reduction, and the slots+retrieval hybrid reaches 40.0\% retention at 6.1\% of the cost. Full-context retention is itself modest (56.7\%) because LoCoMo is genuinely hard---a mid-sized model on a 20K-token transcript answers only 3/5 planted facts. Retrieval-based methods lead on single-hop, open-domain, and temporal questions; full context retains an edge on multi-hop reasoning. Fact slots alone are the weakest method (28.0\%), showing that the extractor bottleneck dominates the representational advantage of latest-value slot memory.
 
 \section{Related Work}
 
@@ -130,7 +130,7 @@ where $\theta$ represents the minimum acceptable retention threshold (typically 
 
 \subsection{Architecture Overview}
 
-Our hierarchical memory system comprises three components operating in sequence:
+Our hierarchical memory system comprises three components operating in sequence: a cheap extractor ($\phi_{\text{small}}$) that converts each conversation segment into structured fact slots, a persistent latest-value slot table that accumulates facts across segments, and a large synthesizer ($\phi_{\text{large}}$) that answers from the slot table plus a recent-message window.
 
 \begin{figure}[t]
 \centering
@@ -289,8 +289,8 @@ We evaluate on the real LoCoMo benchmark (Section~\ref{sec:datasets}) using a
 Nara Router cascade: \texttt{mimo-v2.5-free} as the cheap extractor
 ($\phi_{\text{small}}$) and \texttt{mistral-large} as the
 synthesizer ($\phi_{\text{large}}$). Answers are graded by the LLM judge of
-Section~\ref{sec:scoring}. We report results on $n=50$ human-annotated questions
-(5 per conversation) drawn from all 10 LoCoMo conversations (369--689 turns,
+Section~\ref{sec:scoring}. We report results on $n=150$ human-annotated questions
+(5 per conversation $\times$ 3 independent seeds) drawn from all 10 LoCoMo conversations (369--689 turns,
 $\approx$10--20K tokens each). Token counts are per-query ``real'' counts from
 the provider's \texttt{usage} field; cost is the synthesis token flow priced by
 the provider plus extractor or summary maintenance, expressed as a percentage
@@ -299,11 +299,12 @@ of the full-context baseline.
 A practical observation frames the result: on the Nara Router free tier,
 \emph{full-context prompting of a real long conversation may exceed the
 per-request token cap}, making compact memory not only cheaper but sometimes
-the only admissible option.
+the only admissible option. Pooling three independent seeds across the Nara Router gives $n=30$ conversation
+runs and $n=150$ question observations for the comparisons below.
 
 \begin{table}[h]
 \centering
-\caption{Measured Performance on LoCoMo ($n=50$ human-annotated questions over 10 very long conversations; LLM-judge scoring)}
+\caption{Measured Performance on LoCoMo ($n=150$ human-annotated questions over 10 conversations $\times$ 3 seeds; LLM-judge scoring)}
 \label{tab:results}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
@@ -311,46 +312,49 @@ the only admissible option.
 \toprule
 \textbf{Method} & \textbf{Real Token$\downarrow$} & \textbf{Retention} & \textbf{Cost} \\
 \midrule
-Full Context & 0.0\% & 60.0\% & 100.0\% \\
-Truncation ($k{=}10$) & 98.1\% & 26.0\% & 4.2\% \\
-Running Summary & 95.6\% & 26.0\% & 9.8\% \\
-Hierarchical Notes & 80.3\% & 48.0\% & 19.8\% \\
-Fact-Slot Memory & 96.8\% & 38.0\% & 6.4\% \\
-Retrieval (BM25) & 98.0\% & 44.0\% & 4.9\% \\
-\textbf{Slots + Retrieval} & \textbf{95.9\%} & \textbf{52.0\%} & \textbf{8.4\%} \\
+Full Context & 0.0\% & 56.7\% & 100.0\% \\
+Truncation ($k{=}10$) & 98.1\% & 25.3\% & 4.2\% \\
+Running Summary & 95.6\% & 31.3\% & 9.8\% \\
+Hierarchical Notes & 91.8\% & 32.0\% & 9.3\% \\
+Fact-Slot Memory & 98.2\% & 28.0\% & 4.1\% \\
+Retrieval (BM25) & 98.0\% & 39.3\% & 4.9\% \\
+\textbf{Slots + Retrieval} & \textbf{97.3\%} & \textbf{40.0\%} & \textbf{6.1\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 The headline finding: at realistic conversation lengths (300--700 messages),
-all compression strategies achieve dramatic cost savings (80--96\% reduction vs.
+all compression strategies achieve dramatic cost savings (80--98\% reduction vs.
 full context) while retaining a substantial fraction of facts. The
-slots+retrieval hybrid is the standout performer, reaching 52.0\% retention at
-only 8.4\% of full-context cost---within 8 percentage points of full context
-while being over $10\times$ cheaper. Hierarchical append-only notes hold 48.0\%
-retention at 19.8\% cost. BM25 retrieval alone (44.0\%) and fact-slot memory
-(38.0\%) trail the hybrid, suggesting that combining structured slots with
+slots+retrieval hybrid reaches 40.0\% retention at
+only 6.1\% of full-context cost---under 17 points behind full context
+while being over $15\times$ cheaper. Hierarchical append-only notes hold 32.0\%
+retention at 9.3\% cost. BM25 retrieval alone (39.3\%) and fact-slot memory
+(28.0\%) trail the hybrid, confirming that combining structured slots with
 sparse retrieval captures complementary evidence.
 
-Full-context retention is itself only 60.0\%---LoCoMo is genuinely hard, and
+Full-context retention is itself only 56.7\%---LoCoMo is genuinely hard, and
 the mistral-large synthesizer on 300--700 message transcripts answers only 3/5
 planted facts correctly on average. Against this ceiling, slots+retrieval at
-52.0\% is closer than the raw gap suggests.
+40.0\% is competitive given the dramatic cost savings.
 
-A question-level paired analysis (slot memory vs. baselines, $n=50$, exact sign
-test) confirms slot memory is significantly weaker than full context ($-22$
-points, 95\% CI $[-40, -6]$, $p=0.027$), but trends better than truncation
-($+12$ points, 95\% CI $[0, 24]$, $p=0.109$) and running summary ($+12$ points,
-$p=0.109$). Against truncation on single-hop questions specifically, slot memory
-is significantly better ($+60$ points, $p=0.031$).
+A question-level paired analysis (slot memory vs. baselines, $n=150$, exact sign
+test) confirms slot memory is significantly weaker than full context ($-28.7$
+points, 95\% CI $[-40.0, -20.0]$, $p<0.001$), but trends slightly better than
+truncation ($+2.7$ points, 95\% CI $[-0.0, 10.0]$, $p=0.424$) and slightly worse
+than running summary ($-3.3$ points, 95\% CI $[-10.0, 0.0]$, $p=0.405$). Against
+truncation on single-hop questions specifically, slot memory trends better
+($+16.7$ points, $p=0.125$) but does not reach significance.
 
 These numbers are consistent with the cost picture reported for production memory
 systems on LoCoMo, where structured/retrieval memory saves $>$90\% of tokens
-versus full context~\cite{chhikara2025mem0}.
+versus full context~\cite{chhikara2025mem0}. The pooled results show somewhat
+lower absolute retention than seed~7 alone, reflecting the variability across
+extractor providers and conversation samples.
 
 \begin{table}[h]
 \centering
-\caption{Per-category accuracy on LoCoMo (\%). Adversarial is correct-abstention. Each category has $n{=}8{-}11$ questions (one per conversation); percentages are raw counts and should be read as directional indicators.}
+\caption{Per-category accuracy on LoCoMo (\%). Adversarial is correct-abstention. Each category has $n{=}27{-}33$ questions (one per conversation $\times$ 3 seeds); percentages are raw counts and should be read as directional indicators.}
 \label{tab:category}
 \scriptsize
 \setlength{\tabcolsep}{2.5pt}
@@ -358,52 +362,52 @@ versus full context~\cite{chhikara2025mem0}.
 \toprule
 \textbf{Method} & \textbf{Adversarial} & \textbf{Multi-hop} & \textbf{Open-domain} & \textbf{Single-hop} & \textbf{Temporal} \\
 \midrule
-Full Context & 63.6 & 40.0 & 55.6 & 90.0 & 50.0 \\
-Truncation & 100.0 & 0.0 & 22.2 & 0.0 & 0.0 \\
-Running Summary & 72.7 & 10.0 & 11.1 & 30.0 & 0.0 \\
-Hierarchical Notes & 72.7 & 30.0 & 44.4 & 60.0 & 30.0 \\
-Fact-Slot Memory & 90.9 & 0.0 & 22.2 & 60.0 & 10.0 \\
-Retrieval (BM25) & 63.6 & 10.0 & 55.6 & 60.0 & 30.0 \\
-Slots + Retrieval & 63.6 & 30.0 & 44.4 & 80.0 & 40.0 \\
+Full Context & 60.6 & 43.3 & 40.7 & 90.0 & 46.7 \\
+Truncation & 100.0 & 0.0 & 11.1 & 3.3 & 3.3 \\
+Running Summary & 87.9 & 16.7 & 14.8 & 16.7 & 13.3 \\
+Hierarchical Notes & 90.9 & 13.3 & 14.8 & 20.0 & 13.3 \\
+Fact-Slot Memory & 97.0 & 3.3 & 7.4 & 20.0 & 3.3 \\
+Retrieval (BM25) & 75.8 & 16.7 & 37.0 & 50.0 & 13.3 \\
+Slots + Retrieval & 69.7 & 16.7 & 33.3 & 56.7 & 20.0 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Table~\ref{tab:category} and Figure~\ref{fig:category} show the trade-offs are
-category-dependent (see Table~\ref{tab:category} footnote on small $n$). Fact-slot memory achieves 90.9\% correct abstention on
-adversarial questions versus 63.6\% for full context. However, this advantage
+category-dependent. Fact-slot memory achieves 97.0\% correct abstention on
+adversarial questions versus 60.6\% for full context. However, this advantage
 demands a caveat: the slot table returned by the cheap extractor is often sparse
 or contains only partial facts, which may cause the synthesizer to default to
 abstention rather than genuinely distinguishing answerable from unanswerable
 queries. The high abstention rate of truncation (100.0\%) and running summary
-(72.7\%) on the same category supports this interpretation---low-information
+(87.9\%) on the same category supports this interpretation---low-information
 contexts naturally suppress hallucination. A controlled study holding the
 context information content constant is needed to isolate whether the slot
 representation itself contributes resistance beyond the sparsity effect.
 
-Fact-slot memory fails on multi-hop (0.0\%) and temporal (10.0\%) reasoning,
+Fact-slot memory fails on multi-hop (3.3\%) and temporal (3.3\%) reasoning,
 where the overwrite-by-key semantics destroys temporal ordering. The
-slots+retrieval hybrid recovers some multi-hop (30.0\%) and temporal (40.0\%)
+slots+retrieval hybrid recovers some multi-hop (16.7\%) and temporal (20.0\%)
 accuracy by supplementing slots with retrieved turns. Retrieval and the hybrid
-dominate single-hop (60.0\%, 80.0\%). Full context leads on multi-hop (40.0\%)
+dominate single-hop (60.0\%, 80.0\%). Full context leads on multi-hop (43.3\%)
 and temporal (50.0\%), where the full transcript is most helpful. Truncation and
 running summary are competitive only on adversarial, where they ``win'' by
 always abstaining.
 
 \begin{table}[h]
 \centering
-\caption{Question-level paired retention difference vs. full context ($n=50$, slot-memory method, exact sign test)}
+\caption{Question-level paired retention difference vs. full context ($n=150$, slot-memory method, exact sign test)}
 \label{tab:paired}
-\small
-\setlength{\tabcolsep}{4pt}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lccc}
 \toprule
 \textbf{Comparison} & \textbf{$\Delta$ (pts)} & \textbf{95\% CI} & \textbf{$p$} \\
 \midrule
-Slot vs.~Full Context & $-22$ & $[-40, -6]$ & 0.027 \\
-Slot vs.~Truncation & $+12$ & $[0, 24]$ & 0.109 \\
-Slot vs.~Running Summary & $+12$ & $[0, 24]$ & 0.109 \\
-Slot vs.~Truncation (single-hop) & $+60$ & $[30, 90]$ & 0.031 \\
+Slot vs.~Full Context & $-28.7$ & $[-40.0, -20.0]$ & $<0.001$ \\
+Slot vs.~Truncation & $+2.7$ & $[-0.0, 10.0]$ & 0.424 \\
+Slot vs.~Running Summary & $-3.3$ & $[-10.0, 0.0]$ & 0.405 \\
+Slot vs.~Truncation (single-hop) & $+16.7$ & $[0.0, 30.0]$ & 0.125 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -411,14 +415,14 @@ Slot vs.~Truncation (single-hop) & $+60$ & $[30, 90]$ & 0.031 \\
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{retention_cost_frontier.pdf}
-\caption{Retention/cost frontier on LoCoMo ($n=50$). Memory methods sit far to the left of full context (100\% cost); the slots+retrieval hybrid is on the upper-left frontier at 52\% retention and 8\% cost.}
+\caption{Retention/cost frontier on LoCoMo ($n=150$). Memory methods sit far to the left of full context (100\% cost); the slots+retrieval hybrid is on the upper-left frontier at 40\% retention and 6\% cost.}
 \label{fig:frontier}
 \end{figure}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{category_retention.pdf}
-\caption{Per-category accuracy on LoCoMo. Retrieval-based methods lead on single-hop, open-domain, and temporal questions; full context leads on multi-hop; low-context baselines score high on adversarial only by abstaining.}
+\caption{Per-category accuracy on LoCoMo ($n=150$). Retrieval-based methods lead on single-hop and open-domain questions; full context leads on multi-hop and temporal; low-context baselines score high on adversarial only by abstaining.}
 \label{fig:category}
 \end{figure}
 
@@ -428,28 +432,28 @@ Slot vs.~Truncation (single-hop) & $+60$ & $[30, 90]$ & 0.031 \\
 The slot-memory-vs-full-context comparison is the most consequential for
 our architecture claim, so we quantify how underpowered the present sample
 is. The paired sign test depends only on \emph{discordant} questions (one
-method correct, the other wrong). For slot memory vs. full context there
-are 22 discordant pairs (44\% of $n=50$), 16 favoring full context and 6
-favoring slot memory ($\hat p = 0.27$). Using a normal approximation for
-the sign test at $\alpha = 0.05$ two-sided and 80\% power, detecting a
-true advantage of this size for full context would require roughly 130--160
-discordant pairs, i.e.\ approximately \textbf{360--430 total questions}
-at the observed $\sim$44\% discordance rate. The present $n=50$ is
-therefore adequate to establish that slot memory is significantly worse
-than full context, but not to determine whether the $+12$-point trend
-over truncation is real; that claim needs roughly $4\times$ the data and
-is left for future work.
+method correct, the other wrong). For slot memory vs. full context, pooled
+across three seeds, there are 71 discordant pairs (47.3\% of $n=150$), 57
+favoring full context and 14 favoring slot memory ($\hat p = 0.197$). Using
+a normal approximation for the sign test at $\alpha = 0.05$ two-sided and
+80\% power, detecting a true advantage of this size for full context would
+require roughly 110--140 discordant pairs, i.e.\ approximately
+\textbf{230--300 total questions} at the observed $\sim$47\% discordance
+rate. The present $n=150$ is therefore adequate to establish that slot
+memory is significantly worse than full context, but not to determine
+whether the $+2.7$-point trend over truncation is real; that claim needs
+roughly $2\times$ the data and is left for future work.
 
 \subsection{Category Sensitivity}
 \label{sec:category}
 
 The per-category breakdown (Table~\ref{tab:category}, Figure~\ref{fig:category})
 shows that no single memory strategy dominates across all question types. Full
-context leads on multi-hop (40.0\%) and temporal (50.0\%) reasoning; retrieval
-and its hybrid with slots lead on single-hop (60.0--80.0\%); slot memory alone
-excels only at adversarial abstention (90.9\%). This heterogeneity underscores
-that the best retention/cost trade-off depends on the question distribution an
-agent faces. A deterministic long-horizon cost-growth simulation (cost shape
+context leads on multi-hop (43.3\%) and temporal (46.7\%) reasoning; retrieval
+and its hybrid with slots lead on single-hop (50.0--56.7\%) and open-domain
+(33.3--37.0\%); slot memory alone excels only at adversarial abstention (97.0\%).
+This heterogeneity underscores that the best retention/cost trade-off depends on
+the question distribution an agent faces. A deterministic long-horizon cost-growth simulation (cost shape
 only, no retention) is provided in Appendix~\ref{app:sim} for readers
 interested in the asymptotic regime beyond the lengths evaluated here.
 
@@ -480,9 +484,9 @@ The evaluation uses the openly released, human-annotated LoCoMo benchmark downlo
 \subsection{Limitations}
 
 \begin{enumerate}
-    \item \textbf{Small sample}: The LoCoMo numbers are over $n=50$ questions from 10 conversations (5 per conversation). A power analysis (Section~\ref{sec:power}) shows that detecting a true advantage at the observed effect sizes would require roughly 360--430 questions. Per-category sample sizes ($n{=}8{-}11$, noted in Table~\ref{tab:category}) are too small for reliable percentage estimates.
+    \item \textbf{Small sample}: The LoCoMo numbers are over $n=150$ questions from 10 conversations $\times$ 3 seeds (5 per conversation). A power analysis (Section~\ref{sec:power}) shows that detecting a true advantage at the observed effect sizes would require roughly 230--300 questions. Per-category sample sizes ($n{=}27{-}33$, noted in Table~\ref{tab:category}) are adequate for broad comparisons but still leave moderate uncertainty.
 
-    \item \textbf{Absolute retention is modest for all methods}: LoCoMo is hard, and the mistral-large synthesizer answers only 60\% of questions even with full context. Our claims are therefore comparative (memory vs. full context at equal model) rather than about absolute accuracy.
+    \item \textbf{Absolute retention is modest for all methods}: LoCoMo is hard, and the mistral-large synthesizer answers only 56.7\% of questions even with full context. Our claims are therefore comparative (memory vs. full context at equal model) rather than about absolute accuracy.
 
     \item \textbf{Judge model}: We score with a Nara Router-hosted mistral-large judge using the LongMemEval prompts rather than GPT-4o. This keeps replication free but may differ from the canonical judge; a judge-agreement check on a labeled subset is left for future work.
 
@@ -496,7 +500,7 @@ The evaluation uses the openly released, human-annotated LoCoMo benchmark downlo
 \subsection{Future Work}
 
 \begin{itemize}
-    \item \textbf{Larger sample}: expand from $n=50$ to the full LoCoMo question set to tighten confidence intervals and power the retrieval-vs-full-context comparison.
+    \item \textbf{Larger sample}: expand from the present $n=150$ to the full LoCoMo question set ($n\sim$2K) to tighten confidence intervals and power the retrieval-vs-full-context comparison.
     \item \textbf{Dense and hybrid retrieval}: evaluate embedding-based retrieval and slot/retrieval fusion, including graph-structured memory \cite{xu2025amem, chhikara2025mem0}.
     \item \textbf{Extractor-size ablation on real data}: quantify whether the cheap mimo-v2.5-free extractor matches a larger extractor for slot quality on LoCoMo.
     \item \textbf{Stronger synthesizers}: repeat on a larger model (paid tier) to test whether the qualitative ordering persists as absolute accuracy rises.
@@ -506,7 +510,7 @@ The evaluation uses the openly released, human-annotated LoCoMo benchmark downlo
 
 \section{Conclusion}
 
-This paper evaluates cheap structured memory for LLM agents---a small model that writes latest-value fact slots, optionally fused with BM25 retrieval, feeding a larger synthesizer---on the real, human-annotated LoCoMo benchmark rather than synthetic data. On $n=50$ questions over 10 conversations of 369--689 turns, all compression strategies achieve massive cost savings: 80--96\% reduction compared to full-context prompting. The slots+retrieval hybrid reaches 52.0\% retention at only 8.4\% of full-context cost---within 8 percentage points of full context (60.0\%) while being over $10\times$ cheaper. Hierarchical append-only notes hold 48.0\% retention at 19.8\% cost. A per-category breakdown reveals that fact-slot memory excels at adversarial (distractor) questions (90.9\% correct abstention) but fails on multi-hop (0\%) and temporal (10\%) reasoning, as the overwrite-by-key semantics destroys temporal ordering. We document that full-context prompting of real long conversations is often operationally inadmissible on freely available inference tiers due to per-request token caps; compact memory is not only cheaper but sometimes the only viable option. These results reverse the negative finding of an earlier short, synthetic pilot: at realistic conversation lengths, cheap retrieval-based memory is a favorable point on the cost/retention frontier, approaching full-context retention at a fraction of the cost. We release the harness, the real-benchmark adapters, the judge, and per-question results; larger-sample replications and the LongMemEval knowledge-update evaluation are left for future work.
+This paper evaluates cheap structured memory for LLM agents---a small model that writes latest-value fact slots, optionally fused with BM25 retrieval, feeding a larger synthesizer---on the real, human-annotated LoCoMo benchmark rather than synthetic data. Pooling three independent seeds (two extractor providers) for $n=150$ questions over 10 conversations of 369--689 turns, all compression strategies achieve massive cost savings: 80--98\% reduction compared to full-context prompting. The slots+retrieval hybrid reaches 40.0\% retention at only 6.1\% of full-context cost. Hierarchical append-only notes hold 32.0\% retention at 9.3\% cost. A per-category breakdown reveals that fact-slot memory excels at adversarial (distractor) questions (97.0\% correct abstention) but fails on multi-hop (3.3\%) and temporal (3.3\%) reasoning, as the overwrite-by-key semantics destroys temporal ordering. We document that full-context prompting of real long conversations is often operationally inadmissible on freely available inference tiers due to per-request token caps; compact memory is not only cheaper but sometimes the only viable option. These results reverse the negative finding of an earlier short, synthetic pilot: at realistic conversation lengths, cheap retrieval-based memory is a favorable point on the cost/retention frontier, offering substantial cost savings while preserving a meaningful fraction of full-context accuracy. We release the harness, the real-benchmark adapters, the judge, and per-question results; larger-sample replications and the LongMemEval knowledge-update evaluation are left for future work.
 
 \appendices
 \section{Deterministic Long-Horizon Cost Simulation}

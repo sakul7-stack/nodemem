@@ -98,6 +98,7 @@ _PROVIDERS = {
                 ("BYNARA_API_KEY", "BYNARA_API_KEYS", "MISTRAL_API_KEY", "MISTRAL_API_KEYS")),
     "nara": ("https://router.bynara.id/v1",
              ("NARA_API_KEY", "NARA_API_KEYS", "BYNARA_API_KEY", "BYNARA_API_KEYS")),
+    "openrouter": ("https://openrouter.ai/api/v1", ("OPENROUTER_API_KEY", "OPENROUTER_API_KEYS")),
 }
 
 
@@ -380,8 +381,8 @@ def summarize(values):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--offline", action="store_true")
-    ap.add_argument("--provider", choices=["anthropic", "groq", "nara"], default="nara")
-    ap.add_argument("--synth-provider", choices=["groq", "mistral", "nara", "anthropic"], default=None,
+    ap.add_argument("--provider", choices=["anthropic", "groq", "nara", "openrouter"], default="nara")
+    ap.add_argument("--synth-provider", choices=["groq", "mistral", "nara", "anthropic", "openrouter"], default=None,
                     help="provider for the SYNTHESIZER only (default: same as --provider). "
                          "Use 'mistral' to test a stronger second model family; the extractor "
                          "and judge stay on --provider for comparable scoring.")
@@ -436,8 +437,11 @@ def main():
         args.extract_model = args.extract_model or "llama-3.1-8b-instant"
         args.price_extract = args.price_extract or "llama-3.1-8b-instant"
     elif args.provider == "nara":
-        args.extract_model = args.extract_model or "mimo-v2.5-free"
-        args.price_extract = args.price_extract or "mimo-v2.5-free"
+        args.extract_model = args.extract_model or "mistral-medium-3-5"
+        args.price_extract = args.price_extract or "mistral-medium-3-5"
+    elif args.provider == "openrouter":
+        args.extract_model = args.extract_model or "xiaomi/mimo-v2.5"
+        args.price_extract = args.price_extract or "xiaomi/mimo-v2.5"
     else:
         args.extract_model = args.extract_model or "claude-opus-4-8"
         args.price_extract = args.price_extract or "claude-haiku-4-5"
@@ -456,9 +460,9 @@ def main():
         client = build_provider_client(args.provider, args.throttle)
         synth_client = (client if synth_provider == args.provider
                         else build_provider_client(synth_provider, args.throttle))
-    # The extractor and the judge run on the main `client`; only the synthesizer
-    # (answer generation + running-summary baseline) uses `synth_client`.
-    judge_client = client
+    # The extractor runs on the main `client`; the judge and synthesizer
+    # use `synth_client` so the judge model matches the synth model.
+    judge_client = synth_client
 
     if args.dataset == "locomo":
         path = args.data_path or "data/locomo10.json"
@@ -625,7 +629,14 @@ def main():
                                  judge_client=judge_client, judge_model=judge_model,
                                  use_judge=use_judge)
         except Exception as e:
-            print(f"  !! case {case.id} failed ({type(e).__name__}: {str(e)[:80]}); skipping",
+            msg = str(e)
+            if hasattr(e, 'body'):
+                try:
+                    body = json.loads(e.body)
+                    msg = f"{msg} | body={json.dumps(body)}"
+                except Exception:
+                    msg = f"{msg} | body={e.body}"
+            print(f"  !! case {case.id} failed ({type(e).__name__}: {msg}); skipping",
                   file=sys.stderr)
             continue
 

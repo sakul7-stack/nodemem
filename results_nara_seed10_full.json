@@ -1,0 +1,830 @@
+{
+  "config": {
+    "offline": false,
+    "provider": "openrouter",
+    "scale": "tiny",
+    "synth_provider": "nara",
+    "dataset": "locomo",
+    "judge": "llm",
+    "judge_model": "mistral-large",
+    "rag": true,
+    "rag_backend": "bm25",
+    "n_cases_requested": 10,
+    "n_cases_completed": 1,
+    "synth_model": "mistral-large",
+    "extract_model_called": "xiaomi/mimo-v2.5",
+    "extract_price_tier": "xiaomi/mimo-v2.5",
+    "recent_k": 6,
+    "truncate_k": 10,
+    "segment_size": 24,
+    "rag_top_k": 5,
+    "compact_notes": 0,
+    "slot_memory": true,
+    "token_counter": "tiktoken/cl100k (cumulative); provider usage (per-query real)",
+    "seed": 10,
+    "elapsed_s": 652.1
+  },
+  "strategies": {
+    "full_context": {
+      "token_reduction_real_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 1
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 1
+      },
+      "cost_pct_of_baseline": {
+        "mean": 100.0,
+        "std": 0.0,
+        "ci95": [
+          100.0,
+          100.0
+        ],
+        "n": 1
+      },
+      "retention_pct": {
+        "mean": 20.0,
+        "std": 0.0,
+        "ci95": [
+          20.0,
+          20.0
+        ],
+        "n": 1
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 0.0,
+        "multi_hop": 0.0,
+        "open_domain": 0.0,
+        "single_hop": 100.0,
+        "temporal": 0.0
+      },
+      "category_counts": {
+        "adversarial": 1,
+        "multi_hop": 1,
+        "open_domain": 1,
+        "single_hop": 1,
+        "temporal": 1
+      }
+    },
+    "truncation": {
+      "token_reduction_real_pct": {
+        "mean": 97.44,
+        "std": 0.0,
+        "ci95": [
+          97.44,
+          97.44
+        ],
+        "n": 1
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 94.4,
+        "std": 0.0,
+        "ci95": [
+          94.4,
+          94.4
+        ],
+        "n": 1
+      },
+      "cost_pct_of_baseline": {
+        "mean": 5.6,
+        "std": 0.0,
+        "ci95": [
+          5.6,
+          5.6
+        ],
+        "n": 1
+      },
+      "retention_pct": {
+        "mean": 20.0,
+        "std": 0.0,
+        "ci95": [
+          20.0,
+          20.0
+        ],
+        "n": 1
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 100.0,
+        "multi_hop": 0.0,
+        "open_domain": 0.0,
+        "single_hop": 0.0,
+        "temporal": 0.0
+      },
+      "category_counts": {
+        "adversarial": 1,
+        "multi_hop": 1,
+        "open_domain": 1,
+        "single_hop": 1,
+        "temporal": 1
+      }
+    },
+    "running_summary": {
+      "token_reduction_real_pct": {
+        "mean": 94.61,
+        "std": 0.0,
+        "ci95": [
+          94.61,
+          94.61
+        ],
+        "n": 1
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 88.81,
+        "std": 0.0,
+        "ci95": [
+          88.81,
+          88.81
+        ],
+        "n": 1
+      },
+      "cost_pct_of_baseline": {
+        "mean": 12.29,
+        "std": 0.0,
+        "ci95": [
+          12.29,
+          12.29
+        ],
+        "n": 1
+      },
+      "retention_pct": {
+        "mean": 40.0,
+        "std": 0.0,
+        "ci95": [
+          40.0,
+          40.0
+        ],
+        "n": 1
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 100.0,
+        "multi_hop": 0.0,
+        "open_domain": 100.0,
+        "single_hop": 0.0,
+        "temporal": 0.0
+      },
+      "category_counts": {
+        "adversarial": 1,
+        "multi_hop": 1,
+        "open_domain": 1,
+        "single_hop": 1,
+        "temporal": 1
+      }
+    },
+    "hierarchical": {
+      "token_reduction_real_pct": {
+        "mean": 97.48,
+        "std": 0.0,
+        "ci95": [
+          97.48,
+          97.48
+        ],
+        "n": 1
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 95.26,
+        "std": 0.0,
+        "ci95": [
+          95.26,
+          95.26
+        ],
+        "n": 1
+      },
+      "cost_pct_of_baseline": {
+        "mean": 4.74,
+        "std": 0.0,
+        "ci95": [
+          4.74,
+          4.74
+        ],
+        "n": 1
+      },
+      "retention_pct": {
+        "mean": 20.0,
+        "std": 0.0,
+        "ci95": [
+          20.0,
+          20.0
+        ],
+        "n": 1
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 100.0,
+        "multi_hop": 0.0,
+        "open_domain": 0.0,
+        "single_hop": 0.0,
+        "temporal": 0.0
+      },
+      "category_counts": {
+        "adversarial": 1,
+        "multi_hop": 1,
+        "open_domain": 1,
+        "single_hop": 1,
+        "temporal": 1
+      }
+    },
+    "slot_memory": {
+      "token_reduction_real_pct": {
+        "mean": 98.48,
+        "std": 0.0,
+        "ci95": [
+          98.48,
+          98.48
+        ],
+        "n": 1
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 96.13,
+        "std": 0.0,
+        "ci95": [
+          96.13,
+          96.13
+        ],
+        "n": 1
+      },
+      "cost_pct_of_baseline": {
+        "mean": 3.87,
+        "std": 0.0,
+        "ci95": [
+          3.87,
+          3.87
+        ],
+        "n": 1
+      },
+      "retention_pct": {
+        "mean": 20.0,
+        "std": 0.0,
+        "ci95": [
+          20.0,
+          20.0
+        ],
+        "n": 1
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 100.0,
+        "multi_hop": 0.0,
+        "open_domain": 0.0,
+        "single_hop": 0.0,
+        "temporal": 0.0
+      },
+      "category_counts": {
+        "adversarial": 1,
+        "multi_hop": 1,
+        "open_domain": 1,
+        "single_hop": 1,
+        "temporal": 1
+      }
+    },
+    "rag": {
+      "token_reduction_real_pct": {
+        "mean": 97.32,
+        "std": 0.0,
+        "ci95": [
+          97.32,
+          97.32
+        ],
+        "n": 1
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 93.49,
+        "std": 0.0,
+        "ci95": [
+          93.49,
+          93.49
+        ],
+        "n": 1
+      },
+      "cost_pct_of_baseline": {
+        "mean": 6.51,
+        "std": 0.0,
+        "ci95": [
+          6.51,
+          6.51
+        ],
+        "n": 1
+      },
+      "retention_pct": {
+        "mean": 20.0,
+        "std": 0.0,
+        "ci95": [
+          20.0,
+          20.0
+        ],
+        "n": 1
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 0.0,
+        "multi_hop": 0.0,
+        "open_domain": 100.0,
+        "single_hop": 0.0,
+        "temporal": 0.0
+      },
+      "category_counts": {
+        "adversarial": 1,
+        "multi_hop": 1,
+        "open_domain": 1,
+        "single_hop": 1,
+        "temporal": 1
+      }
+    },
+    "slot_rag_hybrid": {
+      "token_reduction_real_pct": {
+        "mean": 97.29,
+        "std": 0.0,
+        "ci95": [
+          97.29,
+          97.29
+        ],
+        "n": 1
+      },
+      "token_reduction_cumulative_pct": {
+        "mean": 93.42,
+        "std": 0.0,
+        "ci95": [
+          93.42,
+          93.42
+        ],
+        "n": 1
+      },
+      "cost_pct_of_baseline": {
+        "mean": 6.58,
+        "std": 0.0,
+        "ci95": [
+          6.58,
+          6.58
+        ],
+        "n": 1
+      },
+      "retention_pct": {
+        "mean": 20.0,
+        "std": 0.0,
+        "ci95": [
+          20.0,
+          20.0
+        ],
+        "n": 1
+      },
+      "fact_update_retention_pct": {
+        "mean": 0.0,
+        "std": 0.0,
+        "ci95": [
+          0.0,
+          0.0
+        ],
+        "n": 0
+      },
+      "retention_by_category_pct": {
+        "adversarial": 0.0,
+        "multi_hop": 0.0,
+        "open_domain": 100.0,
+        "single_hop": 0.0,
+        "temporal": 0.0
+      },
+      "category_counts": {
+        "adversarial": 1,
+        "multi_hop": 1,
+        "open_domain": 1,
+        "single_hop": 1,
+        "temporal": 1
+      }
+    }
+  },
+  "cost_breakdown_usd": {
+    "extractor_total_cascade_price": 0.0,
+    "extractor_total_actual_price": 0.0,
+    "summary_maintenance_total": 0.039978
+  },
+  "latency_s": {
+    "full_response": {
+      "mean": 4.38,
+      "std": 0.0,
+      "ci95": [
+        4.38,
+        4.38
+      ],
+      "n": 1
+    },
+    "hier_response": {
+      "mean": 1.57,
+      "std": 0.0,
+      "ci95": [
+        1.57,
+        1.57
+      ],
+      "n": 1
+    },
+    "extractor_call": {
+      "mean": 12.46,
+      "std": 5.74,
+      "ci95": [
+        10.68,
+        14.33
+      ],
+      "n": 36
+    },
+    "overhead_mean": -2.81
+  },
+  "case_metrics": [
+    {
+      "case_id": "conv-26",
+      "domain": "locomo",
+      "length_class": "419msg",
+      "n_messages": 419,
+      "n_facts": 5,
+      "n_updated_facts": 0,
+      "strategies": {
+        "full_context": {
+          "token_reduction_real_pct": 0.0,
+          "token_reduction_cumulative_pct": 0.0,
+          "cost_pct_of_baseline": 100.0,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 89283,
+          "cumulative_input_tokens": 1823256,
+          "cost_usd": 3.646512,
+          "latency_s": 4.378896
+        },
+        "truncation": {
+          "token_reduction_real_pct": 97.442962,
+          "token_reduction_cumulative_pct": 94.403967,
+          "cost_pct_of_baseline": 5.596033,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2283,
+          "cumulative_input_tokens": 102030,
+          "cost_usd": 0.20406,
+          "latency_s": 1.546675
+        },
+        "running_summary": {
+          "token_reduction_real_pct": 94.609276,
+          "token_reduction_cumulative_pct": 88.810567,
+          "cost_pct_of_baseline": 12.285768,
+          "retention_pct": 40.0,
+          "fact_update_retention_pct": null,
+          "correct": 2,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 4813,
+          "cumulative_input_tokens": 204012,
+          "cost_usd": 0.448002,
+          "latency_s": 2.526575
+        },
+        "hierarchical": {
+          "token_reduction_real_pct": 97.476563,
+          "token_reduction_cumulative_pct": 95.257331,
+          "cost_pct_of_baseline": 4.742669,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2253,
+          "cumulative_input_tokens": 86471,
+          "cost_usd": 0.172942,
+          "latency_s": 1.569181
+        },
+        "slot_memory": {
+          "token_reduction_real_pct": 98.478994,
+          "token_reduction_cumulative_pct": 96.130275,
+          "cost_pct_of_baseline": 3.869725,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 1358,
+          "cumulative_input_tokens": 70555,
+          "cost_usd": 0.14111,
+          "latency_s": 1.70214
+        },
+        "rag": {
+          "token_reduction_real_pct": 97.318638,
+          "token_reduction_cumulative_pct": 93.489779,
+          "cost_pct_of_baseline": 6.510221,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2394,
+          "cumulative_input_tokens": 118698,
+          "cost_usd": 0.237396,
+          "latency_s": 1.943197
+        },
+        "slot_rag_hybrid": {
+          "token_reduction_real_pct": 97.285037,
+          "token_reduction_cumulative_pct": 93.420343,
+          "cost_pct_of_baseline": 6.579657,
+          "retention_pct": 20.0,
+          "fact_update_retention_pct": null,
+          "correct": 1,
+          "total": 5,
+          "updated_correct": 0,
+          "updated_total": 0,
+          "real_input_tokens": 2424,
+          "cumulative_input_tokens": 119964,
+          "cost_usd": 0.239928,
+          "latency_s": 2.096114
+        }
+      }
+    }
+  ],
+  "question_metrics": [
+    {
+      "key": "conv-26-q191",
+      "category": "adversarial",
+      "is_abstention": true,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 17856,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 1,
+          "real_input_tokens": 456,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 962,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 1,
+          "real_input_tokens": 450,
+          "errored": false
+        },
+        "slot_memory": {
+          "correct": 1,
+          "real_input_tokens": 271,
+          "errored": false
+        },
+        "rag": {
+          "correct": 0,
+          "real_input_tokens": 458,
+          "errored": false
+        },
+        "slot_rag_hybrid": {
+          "correct": 0,
+          "real_input_tokens": 464,
+          "errored": false
+        }
+      },
+      "case_id": "conv-26"
+    },
+    {
+      "key": "conv-26-q76",
+      "category": "multi_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 17859,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 459,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 965,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 453,
+          "errored": false
+        },
+        "slot_memory": {
+          "correct": 0,
+          "real_input_tokens": 274,
+          "errored": false
+        },
+        "rag": {
+          "correct": 0,
+          "real_input_tokens": 553,
+          "errored": false
+        },
+        "slot_rag_hybrid": {
+          "correct": 0,
+          "real_input_tokens": 559,
+          "errored": false
+        }
+      },
+      "case_id": "conv-26"
+    },
+    {
+      "key": "conv-26-q22",
+      "category": "open_domain",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 17859,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 459,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 1,
+          "real_input_tokens": 965,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 453,
+          "errored": false
+        },
+        "slot_memory": {
+          "correct": 0,
+          "real_input_tokens": 274,
+          "errored": false
+        },
+        "rag": {
+          "correct": 1,
+          "real_input_tokens": 460,
+          "errored": false
+        },
+        "slot_rag_hybrid": {
+          "correct": 1,
+          "real_input_tokens": 466,
+          "errored": false
+        }
+      },
+      "case_id": "conv-26"
+    },
+    {
+      "key": "conv-26-q146",
+      "category": "single_hop",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 1,
+          "real_input_tokens": 17854,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 454,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 960,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 448,
+          "errored": false
+        },
+        "slot_memory": {
+          "correct": 0,
+          "real_input_tokens": 269,
+          "errored": false
+        },
+        "rag": {
+          "correct": 0,
+          "real_input_tokens": 454,
+          "errored": false
+        },
+        "slot_rag_hybrid": {
+          "correct": 0,
+          "real_input_tokens": 460,
+          "errored": false
+        }
+      },
+      "case_id": "conv-26"
+    },
+    {
+      "key": "conv-26-q25",
+      "category": "temporal",
+      "is_abstention": false,
+      "updated": false,
+      "by_strategy": {
+        "full_context": {
+          "correct": 0,
+          "real_input_tokens": 17855,
+          "errored": false
+        },
+        "truncation": {
+          "correct": 0,
+          "real_input_tokens": 455,
+          "errored": false
+        },
+        "running_summary": {
+          "correct": 0,
+          "real_input_tokens": 961,
+          "errored": false
+        },
+        "hierarchical": {
+          "correct": 0,
+          "real_input_tokens": 449,
+          "errored": false
+        },
+        "slot_memory": {
+          "correct": 0,
+          "real_input_tokens": 270,
+          "errored": false
+        },
+        "rag": {
+          "correct": 0,
+          "real_input_tokens": 469,
+          "errored": false
+        },
+        "slot_rag_hybrid": {
+          "correct": 0,
+          "real_input_tokens": 475,
+          "errored": false
+        }
+      },
+      "case_id": "conv-26"
+    }
+  ]
+}
