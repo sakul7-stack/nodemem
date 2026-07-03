@@ -1,26 +1,29 @@
 # Findings: Persistent Note-Based Memory Pilot Study
 
-> **2026-07-02 UPDATE — LongMemEval temporal/multi-session/abstention added.**
-> Across the temporal (n=73), multi-session (n=56), and abstention (n=6)
-> categories (n=135 total), the slots+retrieval hybrid matches full context
-> (45.2% vs. 45.2%) and BM25 retrieval nearly matches it (41.5%, paired
-> Δ=−3.7pp, p=0.51, n.s.), while fact-slots alone remain the weakest method
-> (15.6%, p<0.001). The hybrid even exceeds full context on multi-session
-> reasoning (35.7% vs. 33.9%). Cost savings are smaller than on LoCoMo
-> (retrieval at 75% of full-context cost) because LongMemEval oracle
-> conversations are much shorter, but the retention ordering is identical.
-> The full 248-case sweep stalled on the Groq daily 70B-judge token cap after
-> n=135; that sample is the reported result (`results_lme_remaining_n135.json`).
+> **2026-07-03 UPDATE — LongMemEval temporal/multi-session/abstention COMPLETE
+> (n=254).** The full sweep finished after quota recovery (temporal n=127,
+> multi-session n=121, abstention n=6; `results_lme_remaining_n254.json`).
+> The doubled sample **changes the interim n=135 finding**: full context now
+> leads these dispersed-evidence categories (53.1%), BM25 trails it
+> significantly (42.9%, paired Δ=−10.2pp, p=0.004), and only the
+> slots+retrieval hybrid stays statistically indistinguishable (47.6%,
+> Δ=−5.5pp, p=0.14). Fact-slots remain worst (14.2%, p<0.001). This matches
+> the multi-hop error-analysis prediction: bounded top-k sparse retrieval
+> fragments evidence dispersed across sessions. Cost savings are weak here
+> (retrieval 86%, hybrid 97% of full context) because oracle histories are
+> short. Cross-benchmark picture: retrieval is the right trade at long
+> horizons / point lookups; full context keeps a real edge on short-history,
+> dispersed-evidence reasoning. Paper updated accordingly.
 >
 > | Strategy | Retention | Cost |
 > |---|---:|---:|
-> | Full context | 45.2% | 100.0% |
-> | Truncation | 13.3% | 60.5% |
-> | Running summary | 16.3% | 62.6% |
-> | Hierarchical notes | 24.4% | 53.3% |
-> | Fact slots | 15.6% | 51.5% |
-> | Retrieval (BM25) | 41.5% | 75.5% |
-> | **Slots + retrieval** | **45.2%** | **85.4%** |
+> | **Full context** | **53.1%** | 100.0% |
+> | Truncation | 15.8% | 66.0% |
+> | Running summary | 18.9% | 70.9% |
+> | Hierarchical notes | 25.6% | 58.8% |
+> | Fact slots | 14.2% | 57.2% |
+> | Retrieval (BM25) | 42.9% | 85.9% |
+> | Slots + retrieval | 47.6% | 96.9% |
 >
 > **2026-07-01 UPDATE — LongMemEval knowledge-update result added.** On
 > LongMemEval's knowledge-update category (n=72), BM25 retrieval matches full

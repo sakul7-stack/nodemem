@@ -8,6 +8,100 @@ single source of truth for state and how to continue.
 
 ## CURRENT STATUS (resume here)
 
+### ⏸ CHECKPOINT 2026-07-03 (machine shutdown)
+
+**Paper state: publication-ready.** `main.tex` / `build/main.pdf` (10 pp) build
+clean under tectonic (0 errors, 0 undefined refs), publication audit PASSES
+(16/16 citations), every table verified against its result JSON, all tables and
+figures referenced in text. Title, abstract, and conclusion reflect the final
+results including the n=254 LongMemEval boundary finding. Root `main.pdf` is
+synced with `build/main.pdf`. Nothing is committed to git (by request) — the
+working tree holds all changes.
+
+**One experiment intentionally paused: LoCoMo n=450 scale-up** (the "fully
+powered sample" answering the retrieval-vs-full-context question). State:
+2/10 conversations done (n=90 questions in `results_locomo_n450.json`, valid
+JSON, incremental checkpoint). Today's Groq TPD budget is exhausted; next
+quota reset 2026-07-04 00:01 UTC (~05:46 local). Supervisor stopped, lock
+removed. **To resume after boot:**
+
+```bash
+cd ~/Desktop/Research/Persistent_Note_Based_Memory/repo
+nohup .venv/bin/python3 -u scripts/resume_supervisor_locomo.py \
+  >> logs/resume_supervisor_locomo.log 2>&1 &
+```
+
+The supervisor waits for quota, launches `evaluate.py --resume`, survives TPD
+walls, polls every 20 min, and writes `logs/resume_supervisor_locomo.DONE` at
+10/10. Expect ~1–2 conversations per daily quota window → ~4–8 days total.
+When done: regenerate tables (`scripts/summarize_results.py
+results_locomo_n450.json`), figures (`make_figures.py --results
+results_locomo_n450.json`), update Tables results/category/paired + the power
+section in `main.tex`, rebuild (`cd build && cp ../main.tex . && tectonic
+main.tex` twice), re-run `scripts/publication_audit.py`.
+
+**The n=450 run is optional** — the paper is complete and honest at n=160
+(claims parity-at-lower-cost, not superiority; the power analysis says so
+explicitly). n=450 would only upgrade the "non-significant trend" into a
+confirmed/refuted claim.
+
+---
+
+### 2026-07-02 checkpoint — paper rewritten, two new experiments, one in flight
+
+- **Paper REWRITTEN and rebuilt** (`main.tex`, `build/main.pdf`, root `main.pdf`
+  synced). Reframed as an honest empirical study: new title *"Retrieval Beats
+  Cheap Structured Memory..."*; fact slots are now a hypothesis-tested-and-
+  rejected, not the proposed method; fixed the 70B/17B synthesizer
+  contradiction, 369–680 turn counts, κ=0.47 relabeled "moderate", per-cell
+  n/CIs added to the category table, limitations reordered by severity,
+  truncated abstract/conclusion sentences fixed. Build: `tectonic main.tex
+  --outdir build && cp build/main.pdf main.pdf`.
+- **Extractor-size ablation COMPLETE (Experiment A).** Results in
+  `results_lme_ku_bigextractor.json` (LME knowledge-update n=72, extractor
+  upgraded 8B→`llama-3.3-70b-versatile`, everything else identical to
+  `results_lme_knowledge_update.json`). Key finding: fact slots 37.5%→66.7%
+  (+29.2pp paired, 23 wins vs 2, p<1e-4); hybrid becomes best at 80.6%; BM25
+  unchanged (1v1) = clean control; BUT 70B extraction costs 1.8–2.2× full
+  context on short oracle histories → "representation works, cheap-cascade
+  premise fails". Already integrated into the paper (abstract, contribution 2,
+  Table `tab:lme_ku_ablation`, summary bullets, limitations, future work,
+  conclusion).
+- **LoCoMo n≈450 sweep IN FLIGHT (Experiment B).** Target: 10 conversations ×
+  45 category-balanced QA (~450 questions) to power the retrieval-vs-full-
+  context paired test (power analysis says 360–430 needed). Checkpoint file:
+  `results_locomo_n450.json` (per-conversation checkpointing; 1/10 done as of
+  this note, ~17 min/conv). Driven by
+  `scripts/resume_supervisor_locomo.py` (auto-resumes across Groq daily budget
+  resets at 00:00 UTC; defers to any other running evaluate.py; lock file
+  `logs/resume_supervisor_locomo.lock`). Logs:
+  `logs/resume_supervisor_locomo.log` and `logs/locomo_n450_run.log`.
+  **LAPTOP WAS CLOSED MID-RUN — the supervisor and evaluate.py die on
+  shutdown. TO RESUME after reboot:**
+
+  ```bash
+  rm -f logs/resume_supervisor_locomo.lock
+  setsid nohup .venv/bin/python scripts/resume_supervisor_locomo.py \
+      >> logs/resume_supervisor_locomo.log 2>&1 &
+  ```
+
+  Completed conversations are preserved in `results_locomo_n450.json`; the
+  supervisor resumes from there. Done marker:
+  `logs/resume_supervisor_locomo.DONE`.
+- **AFTER Experiment B completes**, remaining paper work:
+  1. `python scripts/paired_analysis.py results_locomo_n450.json --method rag
+     --baselines full_context truncation` (and same for `slot_rag_hybrid`,
+     `slot_memory`, `running_summary`, `hierarchical`) — check whether the
+     retrieval-vs-full-context sign test is now significant at n≈450.
+  2. Update `main.tex`: Table `tab:results`, Table `tab:category`, Table
+     `tab:paired`, the power-analysis section (rewrite as confirmed/refuted),
+     abstract/intro/conclusion claims, limitation #1.
+  3. Regenerate figures (`make_figures.py`) and rebuild with tectonic.
+- 12 Groq keys valid as of this checkpoint (probe returned 200; 6/6 budget
+  keys confirmed at launch).
+
+### Earlier status (superseded but kept for provenance)
+
 - **LoCoMo run COMPLETE at 8 / 10 conversations (n = 160).** Final results in
   `results_locomo_n160.json`. The paper is finalized on this. The last two
   conversations (conv-49, conv-50) were dropped due to rate-limit wedging.
@@ -16,14 +110,16 @@ single source of truth for state and how to continue.
   (73.6% vs 69.4%) at 88% cost; fact-slots alone are worst (37.5%).
 - **Judge cross-validation COMPLETE.** 30 LoCoMo questions, llama-3.3-70b vs
   openai/gpt-oss-120b: 83.3% agreement, Cohen's κ = 0.468.
-- **Remaining LongMemEval categories COMPLETE at n = 135** (temporal 73,
-  multi-session 56, abstention 6). Results in `results_lme_remaining_n135.json`.
-  Key finding: slots+retrieval hybrid matches full context (45.2% vs 45.2%), BM25
-  nearly matches (41.5%, paired Δ=−3.7pp, p=0.51 n.s.), fact-slots worst (15.6%,
-  p<0.001); hybrid exceeds full context on multi-session (35.7% vs 33.9%). The
-  full 248-case sweep stalled on the Groq daily 70B-judge token cap after n=135;
-  that sample is the reported result. Regenerate the paper tables with
-  `python scripts/lme_remaining_table.py results_lme_remaining_n135.json`.
+- **Remaining LongMemEval categories COMPLETE at n = 254** (temporal 127,
+  multi-session 121, abstention 6). Results in `results_lme_remaining_n254.json`
+  (= final `results_lme_remaining.json`; the interim n=135 snapshot is kept in
+  `results_lme_remaining_n135.json`). The full sample **reverses the interim
+  finding**: full context leads (53.1%), BM25 trails significantly (42.9%,
+  Δ=−10.2pp, p=0.004), only the hybrid is statistically indistinguishable
+  (47.6%, Δ=−5.5pp, p=0.14); fact-slots worst (14.2%, p<0.001). Matches the
+  multi-hop error-analysis prediction (evidence fragmentation under bounded
+  top-k). Regenerate the paper tables with
+  `python scripts/lme_remaining_table.py results_lme_remaining_n254.json`.
 - The Mistral-Large second-model run via the free Bynara router was dropped from
   the main loop (router throttles under sustained load); the `--synth-provider
   mistral` code path remains for use with a faster Mistral endpoint later.
@@ -189,12 +285,12 @@ moderate-to-substantial inter-rater reliability.
 ---
 
 ## PENDING WORK
-1. **Scale LongMemEval** from the oracle subset (n=135 done) to the full 500-Q suite (blocked on Groq daily 70B-judge cap).
+1. **Scale LongMemEval** from the oracle subset (n=254 done, all categories) to the full 500-Q suite.
 2. **Second LoCoMo seed** for tighter LoCoMo intervals.
 3. **Dense (embedding) RAG backend** evaluation.
-4. **Extractor-size ablation** (`--ablation`) on real data.
+4. **Extractor-size ablation** — DONE on LongMemEval knowledge-update (see paper Table lme_ku_ablation); extend to LoCoMo.
 5. **Sensitivity sweeps**: `recent_k`, `max_slots`, `top_k`.
-6. **Build final PDF** — DONE (`build/main.pdf`, 9 pp; root `main.pdf` synced).
+6. **Build final PDF** — DONE (`build/main.pdf`; root `main.pdf` synced).
 
 ## FILE INVENTORY (new/changed this migration)
 - `real_datasets.py` — LoCoMo + LongMemEval loaders into the `Case`/`Fact` shape.
