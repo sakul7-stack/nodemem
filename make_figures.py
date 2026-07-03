@@ -144,7 +144,7 @@ def plot_category_retention(results: dict, out_dir: Path) -> None:
     n_groups = len(cat_order)
     n_str = len(strategies)
     width = 0.8 / max(1, n_str)
-    fig, ax = plt.subplots(figsize=(min(13, 2 + 1.6 * n_groups), 4.2))
+    fig, ax = plt.subplots(figsize=(min(13, 2 + 1.6 * n_groups), 5.0))
     for si, (key, label) in enumerate(strategies):
         by_cat = results["strategies"][key].get("retention_by_category_pct", {})
         xs = [i + si * width for i in range(n_groups)]
@@ -157,10 +157,13 @@ def plot_category_retention(results: dict, out_dir: Path) -> None:
     ax.set_ylim(0, 105)
     dataset = results.get("config", {}).get("dataset", "")
     n = results.get("config", {}).get("n_cases_completed", "?")
-    ax.set_title(f"Per-category accuracy ({dataset}, n={n} conversations)")
-    ax.legend(frameon=False, ncol=2)
+    fig.subplots_adjust(top=0.78, bottom=0.12)
+    ax.set_title(f"Per-category accuracy ({dataset}, n={n} conversations)", y=1.28)
+    ax.legend(frameon=False, ncol=4, loc="lower center", bbox_to_anchor=(0.5, 1.08))
     ax.grid(axis="y", alpha=0.25)
-    save_figure(fig, out_dir, "category_retention")
+    fig.savefig(out_dir / "category_retention.png", dpi=220, bbox_inches="tight")
+    fig.savefig(out_dir / "category_retention.pdf", bbox_inches="tight")
+    plt.close(fig)
 
 
 def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
@@ -179,7 +182,6 @@ def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
             markersize=7,
             label=label,
         )
-        ax.annotate(label, (cost, retention), xytext=(6, 4), textcoords="offset points")
     ax.axvline(100, color="#444444", linestyle="--", linewidth=1)
     ax.axhline(90, color="#777777", linestyle=":", linewidth=1)
     ax.set_xlabel("Cost (% of full-context baseline)")
@@ -191,6 +193,7 @@ def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
     ax.set_xlim(0, max(120, hi))
     ax.set_ylim(0, 108)
     ax.grid(alpha=0.25)
+    ax.legend(frameon=False, fontsize=10, loc="upper left")
     save_figure(fig, out_dir, "retention_cost_frontier")
 
 
