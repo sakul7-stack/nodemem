@@ -1,14 +1,12 @@
 
 \documentclass[conference]{IEEEtran}
 \usepackage{amsmath}
-\usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{cite}
 \usepackage{url}
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{booktabs}
-\usepackage{multirow}
 \usepackage{hyperref}
 \graphicspath{{figures/}}
 
@@ -40,7 +38,7 @@ Large language model (LLM) agents that re-send an expanding conversation history
 \end{abstract}
 
 \begin{IEEEkeywords}
-large language model agents, long-term memory, LLM cost optimization, LoCoMo, LongMemEval, retrieval-augmented generation, fact-slot memory, model cascading, token-efficient prompting, conversational memory benchmarks, LLM-as-judge, agentic systems
+large language model agents, long-term conversational memory, retrieval-augmented generation, LLM cost optimization, LoCoMo, LongMemEval, LLM-as-judge
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -438,7 +436,14 @@ This appendix characterizes the cost-growth \emph{shape} at conversation lengths
 \end{tabular}
 \end{table}
 
-The simulation (Table~\ref{tab:growth}) shows the expected divergence: append-only notes fall below full context after a short warm-up but remain well above truncation, while bounded notes and fact slots track close to truncation by 480 messages. This motivates bounded memory at long horizons but, again, says nothing about whether the bounded memory still answers correctly---the live retention experiments above are the load-bearing evidence.
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{cost_vs_length_simulation.pdf}
+\caption{Deterministic cost vs.\ conversation length (log-scale simulation of Table~\ref{tab:growth}). Bounded memories (truncation, compacted notes, fact slots) diverge from full context as length grows; append-only notes save less because they keep growing.}
+\label{fig:growth}
+\end{figure}
+
+The simulation (Table~\ref{tab:growth}, Fig.~\ref{fig:growth}) shows the expected divergence: append-only notes fall below full context after a short warm-up but remain well above truncation, while bounded notes and fact slots track close to truncation by 480 messages. This motivates bounded memory at long horizons but, again, says nothing about whether the bounded memory still answers correctly---the live retention experiments above are the load-bearing evidence.
 
 \section*{Acknowledgment}
 

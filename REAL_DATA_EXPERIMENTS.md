@@ -18,12 +18,10 @@ results including the n=254 LongMemEval boundary finding. Root `main.pdf` is
 synced with `build/main.pdf`. Nothing is committed to git (by request) — the
 working tree holds all changes.
 
-**One experiment intentionally paused: LoCoMo n=450 scale-up** (the "fully
-powered sample" answering the retrieval-vs-full-context question). State:
-2/10 conversations done (n=90 questions in `results_locomo_n450.json`, valid
-JSON, incremental checkpoint). Today's Groq TPD budget is exhausted; next
-quota reset 2026-07-04 00:01 UTC (~05:46 local). Supervisor stopped, lock
-removed. **To resume after boot:**
+**One experiment SKIPPED by decision (2026-07-04): LoCoMo n=450 scale-up.**
+It needs ~4–8 days of daily quota windows; the paper is complete and honest at
+n=160 (claims parity-at-lower-cost, not superiority). Checkpoint preserved:
+2/10 conversations (n=90) in `results_locomo_n450.json`. If ever resumed:
 
 ```bash
 cd ~/Desktop/Research/Persistent_Note_Based_Memory/repo

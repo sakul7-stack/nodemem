@@ -156,6 +156,8 @@ def plot_category_retention(results: dict, out_dir: Path) -> None:
 
 def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
     fig, ax = plt.subplots(figsize=(6.4, 4.4))
+    # Inline labels overlap badly for the clustered low-cost methods, so use a
+    # legend for identification and keep the plot area clean.
     for key, label in available_strategies(results):
         cost, cost_lo, cost_hi = stat(results, key, "cost_pct_of_baseline")
         retention, ret_lo, ret_hi = stat(results, key, "retention_pct")
@@ -170,9 +172,7 @@ def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
             markersize=7,
             label=label,
         )
-        ax.annotate(label, (cost, retention), xytext=(6, 4), textcoords="offset points", fontsize=8)
     ax.axvline(100, color="#444444", linestyle="--", linewidth=1)
-    ax.axhline(90, color="#777777", linestyle=":", linewidth=1)
     ax.set_xlabel("Cost (% of full-context baseline)")
     ax.set_ylabel("Retention (%)")
     ax.set_title("Retention/cost frontier with 95% CIs")
@@ -180,7 +180,10 @@ def plot_retention_cost_frontier(results: dict, out_dir: Path) -> None:
              for key, _ in available_strategies(results)]
     hi = max(costs + [100]) * 1.15
     ax.set_xlim(0, max(120, hi))
-    ax.set_ylim(0, 108)
+    rets = [stat(results, key, "retention_pct")[2]
+            for key, _ in available_strategies(results)]
+    ax.set_ylim(0, max(60, max(rets) * 1.35))
+    ax.legend(loc="upper right", fontsize=8, framealpha=0.9)
     ax.grid(alpha=0.25)
     save_figure(fig, out_dir, "retention_cost_frontier")
 
@@ -402,8 +405,8 @@ def plot_growth_simulation(simulation: dict, out_dir: Path) -> None:
     series = [
         ("full_context", "Full context", "#4c78a8", "-"),
         ("truncation", "Truncation", "#f58518", "--"),
-        ("hierarchical_append_only", "Hierarchical notes", "#b279a2", "-"),
-        ("hierarchical_compacted", "Hierarchical + compaction", "#54a24b", "-"),
+        ("hierarchical_append_only", "Append-only notes", "#b279a2", "-"),
+        ("hierarchical_compacted", "Notes + compaction", "#54a24b", "-"),
         ("slot_memory", "Fact slots", "#e45756", "-"),
     ]
     fig, ax = plt.subplots(figsize=(7.0, 4.3))
